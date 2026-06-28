@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aegis – Chat Quantumly</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="auth-page">
+
+  <div class="auth-container">
+
+    <!-- Header -->
+    <div class="auth-header">
+      <h1 class="logo">AEGIS</h1>
+      <p class="tagline">Chat Quantumly</p>
+      <p class="subtitle">Post-Quantum Secure Communication</p>
+    </div>
+
+    <!-- Tab Buttons -->
+    <div class="auth-tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Log In</button>
+      <button class="tab-btn" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <!-- Login Form -->
+    <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="login-user">Username or Email</label>
+        <input type="text" id="login-user" placeholder="Enter username or email" required />
+      </div>
+      <div class="form-group">
+        <label for="login-pass">Password</label>
+        <input type="password" id="login-pass" placeholder="Enter password" required />
+      </div>
+      <a href="#" class="forgot-link">Forgot password?</a>
+      <button type="submit" class="btn btn-primary btn-full">Log In</button>
+      <p class="form-note">
+        Don't have an account?
+        <a href="#" onclick="switchTab('register')">Register</a>
+      </p>
+    </form>
+
+    <!-- Register Form -->
+    <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label for="reg-username">Username</label>
+        <input type="text" id="reg-username" placeholder="Choose a username" required />
+      </div>
+      <div class="form-group">
+        <label for="reg-email">Email</label>
+        <input type="email" id="reg-email" placeholder="Enter your email" required />
+      </div>
+      <div class="form-group">
+        <label for="reg-pass">Password</label>
+        <input type="password" id="reg-pass" placeholder="Create a password" required />
+      </div>
+      <div class="form-group">
+        <label for="reg-confirm">Confirm Password</label>
+        <input type="password" id="reg-confirm" placeholder="Confirm your password" required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+      <p class="form-note">
+        Already have an account?
+        <a href="#" onclick="switchTab('login')">Log In</a>
+      </p>
+    </form>
+
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>

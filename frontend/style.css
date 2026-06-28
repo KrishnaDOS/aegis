@@ -1,0 +1,254 @@
+/* ============================================================
+   AEGIS — style.css
+   Shared styles for all pages
+   ============================================================ */
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-darkest:  #111111;
+  --bg-dark:     #1e1e1e;
+  --bg-medium:   #2a2a2a;
+  --bg-light:    #333333;
+  --bg-input:    #3d3d3d;
+  --border:      #444444;
+  --text-1:      #e8e8e8;
+  --text-2:      #aaaaaa;
+  --text-3:      #666666;
+  --accent:      #5b8dd9;
+  --accent-dark: #4a7bc8;
+  --danger:      #c05555;
+  --success:     #57ab5a;
+  --radius:      6px;
+  --font:        'Segoe UI', system-ui, Arial, sans-serif;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-1);
+  background: var(--bg-medium);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+input, button, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* --- Utility --- */
+.hidden {
+  display: none !important;
+}
+
+/* --- Buttons --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--accent-dark);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover {
+  background: var(--bg-light);
+  color: var(--text-1);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+.btn-danger:hover {
+  background: #a04444;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* ============================================================
+   AUTH PAGE  (index.html)
+   ============================================================ */
+
+body.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg-darkest);
+}
+
+.auth-container {
+  background: var(--bg-medium);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Header */
+.auth-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.logo {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--text-1);
+}
+
+.tagline {
+  font-size: 13px;
+  color: var(--accent);
+  font-style: italic;
+  margin-top: 4px;
+}
+
+.subtitle {
+  font-size: 11px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+/* Tabs */
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-2);
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab-btn:hover {
+  color: var(--text-1);
+}
+
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Form */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input {
+  background: var(--bg-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-1);
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-group input:focus {
+  border-color: var(--accent);
+}
+
+.form-group input::placeholder {
+  color: var(--text-3);
+}
+
+.forgot-link {
+  font-size: 12px;
+  color: var(--accent);
+  text-align: right;
+  margin-top: -8px;
+}
+
+.form-note {
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+}
+
+.form-note a {
+  color: var(--accent);
+}
+
+/* Inline form messages (error / success) */
+.form-message {
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.form-message.error {
+  background: rgba(192, 85, 85, 0.15);
+  border: 1px solid var(--danger);
+  color: #e08080;
+}
+
+.form-message.success {
+  background: rgba(87, 171, 90, 0.15);
+  border: 1px solid var(--success);
+  color: #80c880;
+}
