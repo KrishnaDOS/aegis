@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aegis – Audit Log</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="audit-page">
+
+  <!-- Top navigation bar -->
+  <nav class="top-nav">
+    <a href="chat.html" class="top-nav-logo">AEGIS</a>
+    <div class="top-nav-right">
+      <span class="top-nav-encrypt">&#128274; Post-Quantum Encrypted</span>
+      <a href="groups.html" class="btn btn-ghost btn-sm">My Groups</a>
+      <a href="index.html" class="btn btn-ghost btn-sm">Log Out</a>
+    </div>
+  </nav>
+
+  <div class="audit-layout">
+
+    <!-- Page header -->
+    <div class="audit-page-header">
+      <div>
+        <h2 class="audit-title">Audit Log — <span id="audit-group-name">...</span> <span class="admin-only-badge">Group Admin Only</span></h2>
+        <p class="audit-subtitle">Record of all actions taken within this group</p>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="audit-filters">
+      <input
+        type="text"
+        id="audit-search"
+        class="audit-search"
+        placeholder="Search logs..."
+        oninput="filterLogs()"
+      />
+      <select id="audit-filter-type" class="audit-select" onchange="filterLogs()">
+        <option value="">All Actions</option>
+        <option value="message">Message</option>
+        <option value="member">Member</option>
+        <option value="channel">Channel</option>
+        <option value="group">Group</option>
+        <option value="auth">Auth</option>
+      </select>
+    </div>
+
+    <!-- Log table -->
+    <div class="audit-table-wrap">
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Action</th>
+            <th>User</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody id="audit-body">
+          <tr data-type="auth">
+            <td class="log-time">2026-07-05 10:30:01</td>
+            <td><span class="log-badge badge-auth">Auth</span></td>
+            <td class="log-user">alice</td>
+            <td class="log-detail">Logged in</td>
+          </tr>
+          <tr data-type="member">
+            <td class="log-time">2026-07-05 10:30:45</td>
+            <td><span class="log-badge badge-member">Member</span></td>
+            <td class="log-user">alice</td>
+            <td class="log-detail">Joined group <strong>CSC4350</strong></td>
+          </tr>
+          <tr data-type="channel">
+            <td class="log-time">2026-07-05 10:31:10</td>
+            <td><span class="log-badge badge-channel">Channel</span></td>
+            <td class="log-user">alice</td>
+            <td class="log-detail">Created channel <strong>#general</strong></td>
+          </tr>
+          <tr data-type="auth">
+            <td class="log-time">2026-07-05 10:32:00</td>
+            <td><span class="log-badge badge-auth">Auth</span></td>
+            <td class="log-user">bob</td>
+            <td class="log-detail">Logged in</td>
+          </tr>
+          <tr data-type="member">
+            <td class="log-time">2026-07-05 10:32:20</td>
+            <td><span class="log-badge badge-member">Member</span></td>
+            <td class="log-user">bob</td>
+            <td class="log-detail">Joined group <strong>CSC4350</strong></td>
+          </tr>
+          <tr data-type="message">
+            <td class="log-time">2026-07-05 10:32:35</td>
+            <td><span class="log-badge badge-message">Message</span></td>
+            <td class="log-user">alice</td>
+            <td class="log-detail">Sent message in <strong>#general</strong></td>
+          </tr>
+          <tr data-type="message">
+            <td class="log-time">2026-07-05 10:34:10</td>
+            <td><span class="log-badge badge-message">Message</span></td>
+            <td class="log-user">bob</td>
+            <td class="log-detail">Sent message in <strong>#general</strong></td>
+          </tr>
+          <tr data-type="member">
+            <td class="log-time">2026-07-05 10:40:00</td>
+            <td><span class="log-badge badge-member">Member</span></td>
+            <td class="log-user">alice</td>
+            <td class="log-detail">Assigned <strong>bob</strong> role: Moderator</td>
+          </tr>
+          <tr data-type="message">
+            <td class="log-time">2026-07-05 10:45:22</td>
+            <td><span class="log-badge badge-message">Message</span></td>
+            <td class="log-user">alice</td>
+            <td class="log-detail">Deleted a message in <strong>#general</strong></td>
+          </tr>
+          <tr data-type="group">
+            <td class="log-time">2026-07-05 11:00:00</td>
+            <td><span class="log-badge badge-group">Group</span></td>
+            <td class="log-user">alice</td>
+            <td class="log-detail">Created group <strong>CSC4610</strong></td>
+          </tr>
+        </tbody>
+      </table>
+      <p id="audit-no-results" class="audit-no-results hidden">No log entries found.</p>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

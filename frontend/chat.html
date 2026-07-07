@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aegis – Chat</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="chat-page">
+
+  <!-- Top navigation bar -->
+  <nav class="top-nav">
+    <a href="chat.html" class="top-nav-logo">AEGIS</a>
+    <div class="top-nav-right">
+      <span class="top-nav-encrypt">&#128274; Post-Quantum Encrypted</span>
+      <a href="index.html" class="btn btn-ghost btn-sm">Log Out</a>
+    </div>
+  </nav>
+
+  <div class="chat-layout">
+
+    <!-- Left sidebar -->
+    <nav class="sidebar">
+
+      <!-- Scrollable content -->
+      <div class="sidebar-scroll">
+
+        <p class="sidebar-section-title">My Groups</p>
+
+        <div class="group-section open">
+          <button class="group-toggle" onclick="toggleGroup(this)">
+            <div class="group-toggle-icon">43</div>
+            <span class="group-toggle-name">CSC4350</span>
+            <span class="toggle-arrow">&#9660;</span>
+          </button>
+          <ul class="channel-list">
+            <li class="channel-item active"># general</li>
+            <li class="channel-item"># announcements</li>
+            <li class="channel-item"># assignments</li>
+            <li class="channel-item channel-private">&#128274; instructors-only</li>
+          </ul>
+        </div>
+
+        <div class="group-section">
+          <button class="group-toggle" onclick="toggleGroup(this)">
+            <div class="group-toggle-icon">31</div>
+            <span class="group-toggle-name">CSC3120</span>
+            <span class="toggle-arrow">&#9654;</span>
+          </button>
+          <ul class="channel-list">
+            <li class="channel-item"># general</li>
+            <li class="channel-item"># homework</li>
+          </ul>
+        </div>
+
+        <div class="group-section">
+          <button class="group-toggle" onclick="toggleGroup(this)">
+            <div class="group-toggle-icon">46</div>
+            <span class="group-toggle-name">CSC4610</span>
+            <span class="toggle-arrow">&#9654;</span>
+          </button>
+          <ul class="channel-list">
+            <li class="channel-item"># general</li>
+          </ul>
+        </div>
+
+        <div class="sidebar-rule"></div>
+
+        <!-- Direct Messages -->
+        <div class="dm-section">
+          <div class="dm-section-header">
+            <span class="section-label">Direct Messages</span>
+            <button class="dm-new-btn" title="New DM">+</button>
+          </div>
+
+          <ul class="dm-list">
+            <li class="dm-item" onclick="switchToDM('alice', 'online', this)">
+              <div class="dm-avatar">A</div>
+              <span class="dm-name">alice</span>
+              <span class="dm-status online"></span>
+            </li>
+            <li class="dm-item" onclick="switchToDM('bob', 'online', this)">
+              <div class="dm-avatar">B</div>
+              <span class="dm-name">bob</span>
+              <span class="dm-status online"></span>
+            </li>
+            <li class="dm-item" onclick="switchToDM('charlie', 'offline', this)">
+              <div class="dm-avatar">C</div>
+              <span class="dm-name">charlie</span>
+              <span class="dm-status offline"></span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Admin section (visible to Group Admins only) -->
+      <div class="sidebar-admin">
+        <p class="sidebar-admin-label">&#128737; Group Admin</p>
+        <a href="audit.html?group=CSC4350" class="sidebar-admin-link">Audit Log</a>
+      </div>
+
+      <!-- User bar -->
+      <div class="sidebar-user-bar">
+        <div class="user-avatar">U</div>
+        <div class="user-info">
+          <span class="user-name">User</span>
+          <span class="user-status">Online</span>
+        </div>
+        <a href="profile.html" class="btn btn-ghost btn-sm">Profile</a>
+      </div>
+
+    </nav>
+
+    <!-- Main chat area -->
+    <main class="chat-main">
+
+      <!-- Channel header -->
+      <header class="chat-header">
+        <div class="chat-header-left">
+          <span class="chat-header-channel" id="chat-title"># general</span>
+          <span class="chat-header-desc" id="chat-desc">CSC4350 general discussion</span>
+        </div>
+        <div class="chat-header-right">
+          <button class="chat-member-count" onclick="toggleMembers()">3 members</button>
+          <div class="chat-search-box">
+            <input
+              type="text"
+              id="chat-search"
+              class="chat-search-input"
+              placeholder="Search messages..."
+              oninput="searchMessages(this.value)"
+            />
+            <span class="chat-search-icon">&#128269;</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Messages -->
+      <div class="chat-messages" id="chat-messages-area">
+        <div class="message">
+          <div class="message-avatar">A</div>
+          <div class="message-body">
+            <span class="message-author">alice</span>
+            <span class="message-time">Today at 10:32 AM</span>
+            <p class="message-text">Hey everyone, welcome to Aegis!</p>
+          </div>
+        </div>
+
+        <div class="message">
+          <div class="message-avatar">B</div>
+          <div class="message-body">
+            <span class="message-author">bob</span>
+            <span class="message-time">Today at 10:34 AM</span>
+            <p class="message-text">Messages are end-to-end encrypted.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message input -->
+      <div class="chat-input-bar">
+        <div class="chat-input-row">
+          <button class="btn btn-ghost btn-icon" title="Attach file">&#128206;</button>
+          <input type="text" class="chat-input" id="chat-input-field" placeholder="Message #general" />
+          <button class="btn btn-primary btn-icon" title="Send">&#10148;</button>
+        </div>
+        <span class="chat-encrypt-label">&#128274; End-to-end encrypted</span>
+      </div>
+
+    </main>
+
+    <!-- Members panel (hidden by default) -->
+    <aside id="members-panel" class="members-panel hidden">
+      <div class="members-panel-header">
+        <span>Members</span>
+        <button class="panel-close" onclick="toggleMembers()">&times;</button>
+      </div>
+
+      <p class="members-category">Online — 2</p>
+      <ul class="members-list">
+        <li class="member-item" onclick="showMemberCard(this)" data-name="alice" data-role="Group Admin" data-joined="2026-06-01" data-status="Online">
+          <div class="member-avatar">A</div>
+          <div class="member-info">
+            <span class="member-name">alice</span>
+            <span class="member-role">Group Admin</span>
+          </div>
+          <span class="dm-status online"></span>
+        </li>
+        <li class="member-item" onclick="showMemberCard(this)" data-name="bob" data-role="Member" data-joined="2026-06-10" data-status="Online">
+          <div class="member-avatar">B</div>
+          <div class="member-info">
+            <span class="member-name">bob</span>
+            <span class="member-role">Member</span>
+          </div>
+          <span class="dm-status online"></span>
+        </li>
+      </ul>
+
+      <p class="members-category">Offline — 1</p>
+      <ul class="members-list">
+        <li class="member-item offline" onclick="showMemberCard(this)" data-name="charlie" data-role="Member" data-joined="2026-06-15" data-status="Offline">
+          <div class="member-avatar">C</div>
+          <div class="member-info">
+            <span class="member-name">charlie</span>
+            <span class="member-role">Member</span>
+          </div>
+          <span class="dm-status offline"></span>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Member info card -->
+    <div id="member-card" class="member-card hidden">
+      <button class="member-card-close" onclick="closeMemberCard()">&times;</button>
+      <div class="member-card-avatar" id="mc-avatar"></div>
+      <div class="member-card-name" id="mc-name"></div>
+      <div class="member-card-status" id="mc-status"></div>
+      <div class="member-card-divider"></div>
+      <div class="member-card-row">
+        <span class="member-card-label">Role</span>
+        <span class="member-card-value" id="mc-role"></span>
+      </div>
+      <div class="member-card-row">
+        <span class="member-card-label">Joined</span>
+        <span class="member-card-value" id="mc-joined"></span>
+      </div>
+      <button class="btn btn-primary btn-full" style="margin-top:12px;" onclick="goToDM()">Send Message</button>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

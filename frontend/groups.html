@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aegis – My Groups</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="groups-page">
+
+  <!-- Top navigation bar -->
+  <nav class="top-nav">
+    <a href="chat.html" class="top-nav-logo">AEGIS</a>
+    <span class="top-nav-group">My Groups</span>
+    <div class="top-nav-right">
+      <span class="top-nav-encrypt">&#128274; Post-Quantum Encrypted</span>
+      <a href="profile.html" class="btn btn-ghost btn-sm">Profile</a>
+      <a href="index.html" class="btn btn-ghost btn-sm">Log Out</a>
+    </div>
+  </nav>
+
+  <div class="groups-layout">
+
+    <!-- Page header -->
+    <div class="groups-page-header">
+      <div>
+        <h2 class="groups-title">My Groups</h2>
+        <p class="groups-subtitle">Select a group to start chatting</p>
+      </div>
+      <button class="btn btn-primary" onclick="showPanel('create')">+ Create Group</button>
+    </div>
+
+    <!-- Group list -->
+    <div class="group-list-section">
+      <ul class="group-list" id="group-list">
+        <li class="group-list-item" onclick="selectGroup(this)">
+          <div class="group-card-icon">43</div>
+          <div class="group-card-info">
+            <span class="group-card-name">CSC4350</span>
+            <span class="group-card-meta">3 members &middot; 4 channels</span>
+          </div>
+        </li>
+        <li class="group-list-item" onclick="selectGroup(this)">
+          <div class="group-card-icon">31</div>
+          <div class="group-card-info">
+            <span class="group-card-name">CSC3120</span>
+            <span class="group-card-meta">5 members &middot; 2 channels</span>
+          </div>
+        </li>
+        <li class="group-list-item" onclick="selectGroup(this)">
+          <div class="group-card-icon">46</div>
+          <div class="group-card-info">
+            <span class="group-card-name">CSC4610</span>
+            <span class="group-card-meta">2 members &middot; 1 channel</span>
+          </div>
+        </li>
+      </ul>
+      <a id="enter-btn" href="chat.html" class="btn btn-primary btn-full group-enter-btn hidden">Enter Group</a>
+    </div>
+
+    <!-- Join Group -->
+    <div class="join-group-section">
+      <h3 class="join-group-title">Join a Group</h3>
+      <p class="join-group-desc">Enter an invite code to join an existing group</p>
+      <div class="join-group-row">
+        <input
+          type="text"
+          id="invite-code"
+          class="join-input"
+          placeholder="Enter invite code"
+        />
+        <button class="btn btn-primary" onclick="handleJoin()">Join</button>
+      </div>
+      <div id="join-message" class="form-message hidden"></div>
+    </div>
+
+    <!-- Create Group panel (hidden by default) -->
+    <div id="create-panel" class="group-panel hidden">
+      <div class="group-panel-header">
+        <h3>Create a New Group</h3>
+        <button class="panel-close" onclick="hidePanel('create')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="new-group-name">Group Name</label>
+        <input type="text" id="new-group-name" placeholder="Enter group name" />
+      </div>
+      <div class="form-group">
+        <label for="new-group-desc">Description</label>
+        <input type="text" id="new-group-desc" placeholder="Short description (optional)" />
+      </div>
+      <div id="create-message" class="form-message hidden"></div>
+      <button class="btn btn-primary btn-full" onclick="handleCreate()">Create Group</button>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
