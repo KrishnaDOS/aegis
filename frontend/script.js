@@ -37,21 +37,23 @@ function hideMessage(elementId) {
 }
 
 // --- Login: client-side check before POST ---
-function validateLogin() {
+function handleLogin(event) {
+  event.preventDefault();
   const username = document.getElementById('login-user').value.trim();
   const password = document.getElementById('login-pass').value;
 
   if (!username || !password) {
     showMessage('login-message', 'Please fill in all fields.', 'error');
-    return false; // stop form submit
+    return;
   }
 
   hideMessage('login-message');
-  return true; // allow form to POST to login.php
+  showMessage('login-message', 'Login submitted! (backend not connected yet)', 'success');
 }
 
 // --- Register: client-side check before POST ---
-function validateRegister() {
+function handleRegister(event) {
+  event.preventDefault();
   const username = document.getElementById('reg-username').value.trim();
   const email    = document.getElementById('reg-email').value.trim();
   const password = document.getElementById('reg-pass').value;
@@ -59,26 +61,26 @@ function validateRegister() {
 
   if (!username || !email || !password || !confirm) {
     showMessage('register-message', 'Please fill in all fields.', 'error');
-    return false;
+    return;
   }
 
   if (username.length < 3) {
     showMessage('register-message', 'Username must be at least 3 characters.', 'error');
-    return false;
+    return;
   }
 
   if (password.length < 8) {
     showMessage('register-message', 'Password must be at least 8 characters.', 'error');
-    return false;
+    return;
   }
 
   if (password !== confirm) {
     showMessage('register-message', 'Passwords do not match.', 'error');
-    return false;
+    return;
   }
 
   hideMessage('register-message');
-  return true; // allow form to POST to register.php
+  showMessage('register-message', 'Account created! (backend not connected yet)', 'success');
 }
 
 // --- Read URL params to display server-side messages ---
