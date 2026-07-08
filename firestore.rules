@@ -3,43 +3,105 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(groupId) {
+      return signedIn()
+        && get(/databases/$(database)/documents/groups/$(groupId)).data.ownerId == request.auth.uid;
+    }
+
+    function isGroupMember(groupId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid));
+    }
+
     match /users/{userId} {
-      allow read: if request.auth != null;
-      allow create, update: if request.auth != null && request.auth.uid == userId;
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == userId;
+      allow delete: if false;
     }
 
     match /groups/{groupId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null
-        && request.auth.uid == resource.data.ownerId;
+      allow read: if isGroupMember(groupId) || isOwner(groupId);
+      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isOwner(groupId);
     }
 
     match /groups/{groupId}/members/{userId} {
-      allow read: if request.auth != null;
-      allow create, update, delete: if request.auth != null;
+      allow read: if isGroupMember(groupId) || isOwner(groupId);
+      allow create, update, delete: if isOwner(groupId);
+    }
+
+    match /groups/{groupId}/roles/{roleId} {
+      allow read: if isGroupMember(groupId);
+      allow write: if isOwner(groupId);
     }
 
     match /groups/{groupId}/channels/{channelId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow read: if isGroupMember(groupId);
+      allow write: if isOwner(groupId);
     }
 
     match /groups/{groupId}/channels/{channelId}/messages/{messageId} {
-      allow read, create: if request.auth != null;
-      allow update, delete: if request.auth != null
-        && request.auth.uid == resource.data.senderId;
+      allow read: if isGroupMember(groupId);
+
+      allow create: if isGroupMember(groupId)
+        && request.resource.data.senderId == request.auth.uid;
+
+      allow update, delete: if isGroupMember(groupId)
+        && resource.data.senderId == request.auth.uid;
     }
 
-    match /directMessages/{conversationId} {
-      allow read, write: if request.auth != null
+    match /directMessages/{dmId} {
+      allow read, write: if signedIn()
         && request.auth.uid in resource.data.participants;
     }
 
-    match /directMessages/{conversationId}/messages/{messageId} {
-      allow read, create: if request.auth != null;
-      allow update, delete: if request.auth != null
-        && request.auth.uid == resource.data.senderId;
+    match /directMessages/{dmId}/messages/{messageId} {
+      allow read, create: if signedIn()
+        && request.auth.uid in get(/databases/$(database)/documents/directMessages/$(dmId)).data.participants;
+
+      allow update, delete: if signedIn()
+        && resource.data.senderId == request.auth.uid;
+    }
+
+    match /groupJoinRequests/{requestId} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+
+      allow read, update, delete: if signedIn();
+    }
+
+    match /messageRequests/{requestId} {
+      allow create: if signedIn()
+        && request.resource.data.senderId == request.auth.uid;
+
+      allow read, update, delete: if signedIn()
+        && (
+          resource.data.senderId == request.auth.uid ||
+          resource.data.receiverId == request.auth.uid
+        );
+    }
+
+    match /files/{fileId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.uploaderId == request.auth.uid;
+
+      allow update, delete: if signedIn()
+        && resource.data.uploaderId == request.auth.uid;
+    }
+
+    match /auditLogs/{logId} {
+      allow read: if false;
+      allow create: if signedIn();
+      allow update, delete: if false;
+    }
+
+    match /emailVerifications/{verificationId} {
+      allow read, write: if false;
     }
   }
 }
