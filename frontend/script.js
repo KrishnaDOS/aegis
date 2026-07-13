@@ -83,22 +83,21 @@ function handleRegister(event) {
   showMessage('register-message', 'Account created! (backend not connected yet)', 'success');
 }
 
-// --- Read URL params to display server-side messages ---
-// PHP redirects back with ?error=... or ?success=... and ?tab=login/register
+// --- Read URL params (index.html only) ---
 function readURLParams() {
+  if (!document.getElementById('login-form')) return;
+
   const params  = new URLSearchParams(window.location.search);
   const tab     = params.get('tab');
   const error   = params.get('error');
   const success = params.get('success');
 
-  // Open the correct tab
   if (tab === 'register') {
     switchTab('register');
   } else {
     switchTab('login');
   }
 
-  // Show error or success message in the right form
   if (error) {
     const targetId = tab === 'register' ? 'register-message' : 'login-message';
     showMessage(targetId, decodeURIComponent(error), 'error');
@@ -122,6 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
   readURLParams();
   loadAuditGroup();
 });
+
 function filterLogs() {
   const query  = document.getElementById('audit-search').value.trim().toLowerCase();
   const type   = document.getElementById('audit-filter-type').value;
@@ -236,6 +236,29 @@ function selectGroup(item) {
   document.querySelectorAll('.group-list-item').forEach(el => el.classList.remove('selected'));
   item.classList.add('selected');
   document.getElementById('enter-btn').classList.remove('hidden');
+
+  const isAdmin  = item.dataset.admin === 'true';
+  const code     = item.dataset.code;
+  const name     = item.querySelector('.group-card-name').textContent;
+  const panel    = document.getElementById('invite-code-panel');
+
+  if (isAdmin) {
+    document.getElementById('invite-code-value').textContent = code;
+    document.getElementById('invite-group-name').textContent = name;
+    hideMessage('copy-message');
+    panel.classList.remove('hidden');
+  } else {
+    panel.classList.add('hidden');
+  }
+}
+
+function copyInviteCode() {
+  const code = document.getElementById('invite-code-value').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    showMessage('copy-message', 'Invite code copied to clipboard!', 'success');
+  }).catch(() => {
+    showMessage('copy-message', 'Could not copy. Please copy manually.', 'error');
+  });
 }
 
 function showPanel(name) {
@@ -261,7 +284,32 @@ function handleCreate() {
     showMessage('create-message', 'Please enter a group name.', 'error');
     return;
   }
-  showMessage('create-message', 'Group created! (backend not connected yet)', 'success');
+
+  // Generate a placeholder invite code
+  const code = 'AEG-' + Math.random().toString(36).substring(2, 6).toUpperCase() +
+               '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+  hidePanel('create');
+  document.getElementById('new-group-name').value = '';
+  document.getElementById('new-group-desc').value = '';
+
+  document.getElementById('modal-group-name').textContent = name;
+  document.getElementById('modal-code-value').textContent = code;
+  hideMessage('modal-copy-message');
+  document.getElementById('invite-modal-overlay').classList.remove('hidden');
+}
+
+function closeInviteModal() {
+  document.getElementById('invite-modal-overlay').classList.add('hidden');
+}
+
+function copyModalCode() {
+  const code = document.getElementById('modal-code-value').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    showMessage('modal-copy-message', 'Invite code copied!', 'success');
+  }).catch(() => {
+    showMessage('modal-copy-message', 'Could not copy. Please copy manually.', 'error');
+  });
 }
 
 // --- Chat page: member info card ---
@@ -336,6 +384,51 @@ function searchMessages(query) {
   } else if (noResults) {
     noResults.remove();
   }
+}
+
+// --- Chat page: attach file modal ---
+function openAttachModal() {
+  document.getElementById('attach-modal-overlay').classList.remove('hidden');
+}
+
+function closeAttachModal() {
+  document.getElementById('attach-modal-overlay').classList.add('hidden');
+  clearAttach();
+}
+
+function handleFileSelect(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const size = file.size < 1024 * 1024
+    ? (file.size / 1024).toFixed(1) + ' KB'
+    : (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+  document.getElementById('attach-file-name').textContent = file.name + ' (' + size + ')';
+  document.getElementById('attach-preview').classList.remove('hidden');
+  document.getElementById('attach-send-btn').disabled = false;
+}
+
+function clearAttach() {
+  document.getElementById('file-input').value = '';
+  document.getElementById('attach-preview').classList.add('hidden');
+  document.getElementById('attach-send-btn').disabled = true;
+}
+
+function sendAttach() {
+  const fileName = document.getElementById('attach-file-name').textContent;
+  closeAttachModal();
+  const area = document.getElementById('chat-messages-area');
+  const msg = document.createElement('div');
+  msg.className = 'message';
+  msg.innerHTML = `
+    <div class="message-avatar">U</div>
+    <div class="message-body">
+      <span class="message-author">User</span>
+      <span class="message-time">Just now</span>
+      <div class="message-file">&#128196; ${fileName}</div>
+    </div>
+  `;
+  area.appendChild(msg);
+  area.scrollTop = area.scrollHeight;
 }
 
 // --- Chat page: toggle group accordion ---

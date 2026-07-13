@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aegis – Chat</title>
+  <title>Aegis</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="chat-page">
@@ -160,7 +160,7 @@
       <!-- Message input -->
       <div class="chat-input-bar">
         <div class="chat-input-row">
-          <button class="btn btn-ghost btn-icon" title="Attach file">&#128206;</button>
+          <button class="btn btn-ghost btn-icon" title="Attach file" onclick="openAttachModal()">&#128206;</button>
           <input type="text" class="chat-input" id="chat-input-field" placeholder="Message #general" />
           <button class="btn btn-primary btn-icon" title="Send">&#10148;</button>
         </div>
@@ -227,6 +227,31 @@
       <button class="btn btn-primary btn-full" style="margin-top:12px;" onclick="goToDM()">Send Message</button>
     </div>
 
+  </div>
+
+  <!-- Attach file modal -->
+  <div id="attach-modal-overlay" class="modal-overlay hidden" onclick="closeAttachModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Attach File</h3>
+        <button class="panel-close" onclick="closeAttachModal()">&times;</button>
+      </div>
+      <div class="attach-drop-zone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" class="hidden" onchange="handleFileSelect(this)" />
+        <div class="attach-drop-icon">&#128206;</div>
+        <p class="attach-drop-text">Click to browse or drag &amp; drop</p>
+        <p class="attach-drop-sub">Max file size: 25 MB</p>
+      </div>
+      <div id="attach-preview" class="attach-preview hidden">
+        <span class="attach-file-icon">&#128196;</span>
+        <span id="attach-file-name" class="attach-file-name"></span>
+        <button class="attach-remove-btn" onclick="clearAttach()">&#10005;</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeAttachModal()">Cancel</button>
+        <button class="btn btn-primary" id="attach-send-btn" onclick="sendAttach()" disabled>Send File</button>
+      </div>
+    </div>
   </div>
 
   <script src="script.js"></script>
