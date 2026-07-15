@@ -750,6 +750,109 @@ body.groups-page {
   color: var(--text-3);
 }
 
+/* --- Modal --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modal {
+  background: var(--bg-dark);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 28px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.modal-desc {
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.6;
+}
+
+.modal-desc strong {
+  color: var(--text-1);
+}
+
+.modal-code-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-medium);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+}
+
+/* --- Invite code panel --- */
+.invite-code-panel {
+  background: var(--bg-dark);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.invite-code-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.invite-code-desc {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.invite-code-desc strong {
+  color: var(--text-1);
+}
+
+.invite-code-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-medium);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+
+.invite-code-value {
+  flex: 1;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+
 /* --- Join Group section --- */
 .join-group-section {
   background: var(--bg-dark);
@@ -1608,4 +1711,87 @@ body.chat-page {
   padding: 0;
   font-size: 16px;
   flex-shrink: 0;
+}
+
+/* --- Attach file modal --- */
+.attach-drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.attach-drop-zone:hover {
+  border-color: var(--accent);
+}
+
+.attach-drop-icon {
+  font-size: 28px;
+}
+
+.attach-drop-text {
+  font-size: 14px;
+  color: var(--text-1);
+  font-weight: 500;
+}
+
+.attach-drop-sub {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.attach-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-medium);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+
+.attach-file-name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attach-remove-btn {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+}
+
+.attach-remove-btn:hover {
+  color: var(--danger);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.message-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-medium);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--accent);
+  margin-top: 4px;
 }
