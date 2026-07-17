@@ -431,6 +431,150 @@ function sendAttach() {
   area.scrollTop = area.scrollHeight;
 }
 
+// --- Chat page: send text message ---
+function escapeHTML(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function sendMessage() {
+  const input = document.getElementById('chat-input-field');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const area = document.getElementById('chat-messages-area');
+  const msg = document.createElement('div');
+  msg.className = 'message';
+  msg.innerHTML = `
+    <div class="message-avatar">U</div>
+    <div class="message-body">
+      <span class="message-author">User</span>
+      <span class="message-time">Just now</span>
+      <p class="message-text">${escapeHTML(text)}</p>
+    </div>
+  `;
+  area.appendChild(msg);
+  area.scrollTop = area.scrollHeight;
+  input.value = '';
+}
+
+function handleChatKey(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+}
+
+// --- Chat page: switch channel ---
+function switchToChannel(item) {
+  document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
+  item.classList.add('active');
+
+  const channel = item.dataset.channel;
+  const group   = item.dataset.group;
+  const desc    = item.dataset.desc;
+
+  document.getElementById('chat-title').textContent           = '# ' + channel;
+  document.getElementById('chat-desc').textContent            = desc;
+  document.getElementById('chat-desc').style.color            = '';
+  document.getElementById('chat-input-field').placeholder     = 'Message #' + channel;
+
+  document.getElementById('chat-messages-area').innerHTML = `
+    <div class="message">
+      <div class="message-avatar">S</div>
+      <div class="message-body">
+        <span class="message-author">System</span>
+        <span class="message-time">Today</span>
+        <p class="message-text">Welcome to #${escapeHTML(channel)} (${escapeHTML(group)})</p>
+      </div>
+    </div>
+  `;
+}
+
+// --- Group Settings modal ---
+function openGroupSettings() {
+  document.getElementById('group-settings-overlay').classList.remove('hidden');
+}
+
+function closeGroupSettings() {
+  document.getElementById('group-settings-overlay').classList.add('hidden');
+}
+
+function removeMember(btn, name) {
+  if (!confirm('Remove ' + name + ' from the group?')) return;
+  btn.closest('.settings-member-item').remove();
+}
+
+function addChannel() {
+  const input = document.getElementById('new-channel-input');
+  const name  = input.value.trim().toLowerCase().replace(/\s+/g, '-');
+  if (!name) {
+    showMessage('settings-channel-msg', 'Enter a channel name.', 'error');
+    return;
+  }
+  hideMessage('settings-channel-msg');
+
+  const li = document.createElement('li');
+  li.className = 'settings-channel-item';
+  li.innerHTML = `
+    <span># ${escapeHTML(name)}</span>
+    <button class="settings-delete-btn" onclick="removeChannelItem(this)">&#128465;</button>
+  `;
+  document.getElementById('settings-channel-list').appendChild(li);
+  input.value = '';
+}
+
+function removeChannelItem(btn) {
+  btn.closest('.settings-channel-item').remove();
+}
+
+// --- New DM modal ---
+function openNewDMModal() {
+  document.getElementById('dm-search-input').value = '';
+  filterDMSearch('');
+  document.getElementById('new-dm-overlay').classList.remove('hidden');
+}
+
+function closeNewDMModal() {
+  document.getElementById('new-dm-overlay').classList.add('hidden');
+}
+
+function filterDMSearch(query) {
+  const q = query.trim().toLowerCase();
+  document.querySelectorAll('.new-dm-item').forEach(item => {
+    const name = item.querySelector('.dm-name').textContent.toLowerCase();
+    item.classList.toggle('hidden', q.length > 0 && !name.includes(q));
+  });
+}
+
+function startNewDM(name, el) {
+  closeNewDMModal();
+
+  const status = el.querySelector('.dm-status').classList.contains('online') ? 'online' : 'offline';
+
+  const existing = Array.from(document.querySelectorAll('.dm-item')).find(
+    i => i.querySelector('.dm-name').textContent === name
+  );
+  if (existing) {
+    switchToDM(name, status, existing);
+    return;
+  }
+
+  const li = document.createElement('li');
+  li.className = 'dm-item';
+  li.innerHTML = `
+    <div class="dm-avatar">${escapeHTML(name.charAt(0).toUpperCase())}</div>
+    <span class="dm-name">${escapeHTML(name)}</span>
+    <span class="dm-status ${status}"></span>
+  `;
+  li.onclick = function () { switchToDM(name, status, this); };
+  document.querySelector('.dm-list').appendChild(li);
+  switchToDM(name, status, li);
+}
+
 // --- Chat page: toggle group accordion ---
 function toggleGroup(btn) {
   const section = btn.closest('.group-section');
