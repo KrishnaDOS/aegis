@@ -1783,6 +1783,142 @@ body.chat-page {
   gap: 8px;
 }
 
+/* --- Group settings gear icon in sidebar --- */
+.group-settings-icon {
+  font-size: 14px;
+  color: var(--text-3);
+  padding: 2px 5px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.group-settings-icon:hover {
+  color: var(--accent);
+  background: var(--bg-light);
+}
+
+/* --- Group Settings modal --- */
+.settings-modal {
+  max-width: 500px;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-3);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-member-list,
+.settings-channel-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-member-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--bg-medium);
+  border-radius: var(--radius);
+}
+
+.settings-member-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.settings-role-select {
+  background: var(--bg-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-1);
+  padding: 4px 8px;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+.settings-role-select:focus {
+  border-color: var(--accent);
+}
+
+.settings-channel-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--bg-medium);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.settings-channel-default {
+  font-size: 11px;
+  color: var(--text-3);
+  font-style: italic;
+}
+
+.settings-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.settings-delete-btn:hover {
+  color: var(--danger);
+}
+
+.settings-add-channel {
+  display: flex;
+  gap: 8px;
+}
+
+/* --- New DM modal --- */
+.new-dm-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.new-dm-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.new-dm-item:hover {
+  background: var(--bg-medium);
+}
+
 .message-file {
   display: inline-flex;
   align-items: center;

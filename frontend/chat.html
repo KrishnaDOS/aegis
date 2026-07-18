@@ -31,12 +31,13 @@
           <button class="group-toggle" onclick="toggleGroup(this)">
             <div class="group-toggle-icon">43</div>
             <span class="group-toggle-name">CSC4350</span>
+            <span class="group-settings-icon" onclick="openGroupSettings(); event.stopPropagation();" title="Group Settings">&#9881;</span>
             <span class="toggle-arrow">&#9660;</span>
           </button>
           <ul class="channel-list">
-            <li class="channel-item active"># general</li>
-            <li class="channel-item"># announcements</li>
-            <li class="channel-item"># assignments</li>
+            <li class="channel-item active" onclick="switchToChannel(this)" data-channel="general" data-group="CSC4350" data-desc="CSC4350 general discussion"># general</li>
+            <li class="channel-item" onclick="switchToChannel(this)" data-channel="announcements" data-group="CSC4350" data-desc="Official announcements"># announcements</li>
+            <li class="channel-item" onclick="switchToChannel(this)" data-channel="assignments" data-group="CSC4350" data-desc="Assignment discussion"># assignments</li>
             <li class="channel-item channel-private">&#128274; instructors-only</li>
           </ul>
         </div>
@@ -48,8 +49,8 @@
             <span class="toggle-arrow">&#9654;</span>
           </button>
           <ul class="channel-list">
-            <li class="channel-item"># general</li>
-            <li class="channel-item"># homework</li>
+            <li class="channel-item" onclick="switchToChannel(this)" data-channel="general" data-group="CSC3120" data-desc="CSC3120 general discussion"># general</li>
+            <li class="channel-item" onclick="switchToChannel(this)" data-channel="homework" data-group="CSC3120" data-desc="Homework discussion"># homework</li>
           </ul>
         </div>
 
@@ -60,7 +61,7 @@
             <span class="toggle-arrow">&#9654;</span>
           </button>
           <ul class="channel-list">
-            <li class="channel-item"># general</li>
+            <li class="channel-item" onclick="switchToChannel(this)" data-channel="general" data-group="CSC4610" data-desc="CSC4610 general discussion"># general</li>
           </ul>
         </div>
 
@@ -70,7 +71,7 @@
         <div class="dm-section">
           <div class="dm-section-header">
             <span class="section-label">Direct Messages</span>
-            <button class="dm-new-btn" title="New DM">+</button>
+            <button class="dm-new-btn" title="New DM" onclick="openNewDMModal()">+</button>
           </div>
 
           <ul class="dm-list">
@@ -161,8 +162,8 @@
       <div class="chat-input-bar">
         <div class="chat-input-row">
           <button class="btn btn-ghost btn-icon" title="Attach file" onclick="openAttachModal()">&#128206;</button>
-          <input type="text" class="chat-input" id="chat-input-field" placeholder="Message #general" />
-          <button class="btn btn-primary btn-icon" title="Send">&#10148;</button>
+          <input type="text" class="chat-input" id="chat-input-field" placeholder="Message #general" onkeydown="handleChatKey(event)" />
+          <button class="btn btn-primary btn-icon" title="Send" onclick="sendMessage()">&#10148;</button>
         </div>
         <span class="chat-encrypt-label">&#128274; End-to-end encrypted</span>
       </div>
@@ -251,6 +252,110 @@
         <button class="btn btn-ghost" onclick="closeAttachModal()">Cancel</button>
         <button class="btn btn-primary" id="attach-send-btn" onclick="sendAttach()" disabled>Send File</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Group Settings modal -->
+  <div id="group-settings-overlay" class="modal-overlay hidden" onclick="closeGroupSettings()">
+    <div class="modal settings-modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Group Settings — CSC4350</h3>
+        <button class="panel-close" onclick="closeGroupSettings()">&times;</button>
+      </div>
+
+      <div class="settings-section">
+        <p class="settings-section-label">Members</p>
+        <ul class="settings-member-list" id="settings-member-list">
+          <li class="settings-member-item">
+            <div class="member-avatar">A</div>
+            <span class="settings-member-name">alice</span>
+            <select class="settings-role-select">
+              <option value="Group Admin" selected>Group Admin</option>
+              <option value="Moderator">Moderator</option>
+              <option value="Member">Member</option>
+              <option value="Guest">Guest</option>
+            </select>
+            <button class="btn btn-danger btn-sm" onclick="removeMember(this, 'alice')">Remove</button>
+          </li>
+          <li class="settings-member-item">
+            <div class="member-avatar">B</div>
+            <span class="settings-member-name">bob</span>
+            <select class="settings-role-select">
+              <option value="Group Admin">Group Admin</option>
+              <option value="Moderator">Moderator</option>
+              <option value="Member" selected>Member</option>
+              <option value="Guest">Guest</option>
+            </select>
+            <button class="btn btn-danger btn-sm" onclick="removeMember(this, 'bob')">Remove</button>
+          </li>
+          <li class="settings-member-item">
+            <div class="member-avatar">C</div>
+            <span class="settings-member-name">charlie</span>
+            <select class="settings-role-select">
+              <option value="Group Admin">Group Admin</option>
+              <option value="Moderator">Moderator</option>
+              <option value="Member" selected>Member</option>
+              <option value="Guest">Guest</option>
+            </select>
+            <button class="btn btn-danger btn-sm" onclick="removeMember(this, 'charlie')">Remove</button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="settings-section">
+        <p class="settings-section-label">Channels</p>
+        <ul class="settings-channel-list" id="settings-channel-list">
+          <li class="settings-channel-item">
+            <span># general</span>
+            <span class="settings-channel-default">default</span>
+          </li>
+          <li class="settings-channel-item">
+            <span># announcements</span>
+            <button class="settings-delete-btn" onclick="removeChannelItem(this)">&#128465;</button>
+          </li>
+          <li class="settings-channel-item">
+            <span># assignments</span>
+            <button class="settings-delete-btn" onclick="removeChannelItem(this)">&#128465;</button>
+          </li>
+          <li class="settings-channel-item">
+            <span>&#128274; instructors-only</span>
+            <button class="settings-delete-btn" onclick="removeChannelItem(this)">&#128465;</button>
+          </li>
+        </ul>
+        <div class="settings-add-channel">
+          <input type="text" id="new-channel-input" class="join-input" placeholder="New channel name" />
+          <button class="btn btn-primary btn-sm" onclick="addChannel()">Add</button>
+        </div>
+        <div id="settings-channel-msg" class="form-message hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New DM modal -->
+  <div id="new-dm-overlay" class="modal-overlay hidden" onclick="closeNewDMModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Start a New DM</h3>
+        <button class="panel-close" onclick="closeNewDMModal()">&times;</button>
+      </div>
+      <input type="text" id="dm-search-input" class="join-input" placeholder="Search members..." oninput="filterDMSearch(this.value)" />
+      <ul class="new-dm-list" id="new-dm-list">
+        <li class="new-dm-item" onclick="startNewDM('dave', this)">
+          <div class="dm-avatar">D</div>
+          <span class="dm-name">dave</span>
+          <span class="dm-status online"></span>
+        </li>
+        <li class="new-dm-item" onclick="startNewDM('eve', this)">
+          <div class="dm-avatar">E</div>
+          <span class="dm-name">eve</span>
+          <span class="dm-status offline"></span>
+        </li>
+        <li class="new-dm-item" onclick="startNewDM('frank', this)">
+          <div class="dm-avatar">F</div>
+          <span class="dm-name">frank</span>
+          <span class="dm-status online"></span>
+        </li>
+      </ul>
     </div>
   </div>
 
