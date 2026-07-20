@@ -1,0 +1,14 @@
+{
+  "name": "aegis",
+  "version": "1.0.0",
+  "description": "Aegis - Post-Quantum Secure Communication App",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  }
+}

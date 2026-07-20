@@ -198,20 +198,18 @@ function changePassword() {
 
 // --- Chat page: switch main area to DM conversation ---
 function switchToDM(name, status, el) {
-  // Update header
   document.getElementById('chat-title').textContent = '@ ' + name;
   document.getElementById('chat-desc').textContent  = status === 'online' ? 'Online' : 'Offline';
   document.getElementById('chat-desc').style.color  = status === 'online' ? 'var(--success)' : 'var(--text-3)';
 
-  // Update input placeholder
   document.getElementById('chat-input-field').placeholder = 'Message ' + name;
 
-  // Replace messages with DM conversation
+  const safeName = escapeHTML(name);
   document.getElementById('chat-messages-area').innerHTML = `
     <div class="message">
-      <div class="message-avatar">${name.charAt(0).toUpperCase()}</div>
+      <div class="message-avatar">${escapeHTML(name.charAt(0).toUpperCase())}</div>
       <div class="message-body">
-        <span class="message-author">${name}</span>
+        <span class="message-author">${safeName}</span>
         <span class="message-time">Today at 9:10 AM</span>
         <p class="message-text">Hey, how's it going?</p>
       </div>
@@ -226,7 +224,7 @@ function switchToDM(name, status, el) {
     </div>
   `;
 
-  // Highlight selected DM item
+  document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
   document.querySelectorAll('.dm-item').forEach(i => i.classList.remove('dm-item-active'));
   if (el) el.classList.add('dm-item-active');
 }
@@ -362,7 +360,8 @@ function searchMessages(query) {
   let visibleCount = 0;
 
   messages.forEach(msg => {
-    const text = msg.querySelector('.message-text').textContent.toLowerCase();
+    const textEl = msg.querySelector('.message-text');
+    const text   = textEl ? textEl.textContent.toLowerCase() : '';
     const author = msg.querySelector('.message-author').textContent.toLowerCase();
     if (!q || text.includes(q) || author.includes(q)) {
       msg.classList.remove('hidden-by-search');
@@ -471,6 +470,7 @@ function handleChatKey(event) {
 // --- Chat page: switch channel ---
 function switchToChannel(item) {
   document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.dm-item').forEach(el => el.classList.remove('dm-item-active'));
   item.classList.add('active');
 
   const channel = item.dataset.channel;
