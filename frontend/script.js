@@ -233,7 +233,10 @@ function switchToDM(name, status, el) {
 function selectGroup(item) {
   document.querySelectorAll('.group-list-item').forEach(el => el.classList.remove('selected'));
   item.classList.add('selected');
-  document.getElementById('enter-btn').classList.remove('hidden');
+
+  const enterBtn = document.getElementById('enter-btn');
+  enterBtn.href  = 'chat.html?groupId=' + item.dataset.id;
+  enterBtn.classList.remove('hidden');
 
   const isAdmin  = item.dataset.admin === 'true';
   const code     = item.dataset.code;
@@ -473,30 +476,30 @@ function switchToChannel(item) {
   document.querySelectorAll('.dm-item').forEach(el => el.classList.remove('dm-item-active'));
   item.classList.add('active');
 
-  const channel = item.dataset.channel;
-  const group   = item.dataset.group;
-  const desc    = item.dataset.desc;
+  const channel   = item.dataset.channel;
+  const desc      = item.dataset.desc;
+  const groupId   = item.dataset.groupId;
+  const channelId = item.dataset.channelId;
 
-  document.getElementById('chat-title').textContent           = '# ' + channel;
-  document.getElementById('chat-desc').textContent            = desc;
-  document.getElementById('chat-desc').style.color            = '';
-  document.getElementById('chat-input-field').placeholder     = 'Message #' + channel;
+  document.getElementById('chat-title').textContent       = '# ' + channel;
+  document.getElementById('chat-desc').textContent        = desc;
+  document.getElementById('chat-desc').style.color        = '';
+  document.getElementById('chat-input-field').placeholder = 'Message #' + channel;
 
-  document.getElementById('chat-messages-area').innerHTML = `
-    <div class="message">
-      <div class="message-avatar">S</div>
-      <div class="message-body">
-        <span class="message-author">System</span>
-        <span class="message-time">Today</span>
-        <p class="message-text">Welcome to #${escapeHTML(channel)} (${escapeHTML(group)})</p>
-      </div>
-    </div>
-  `;
+  if (window.loadMessages && groupId && channelId) {
+    window.loadMessages(groupId, channelId);
+  }
 }
 
 // --- Group Settings modal ---
-function openGroupSettings() {
+function openGroupSettings(groupId, role) {
+  window._settingsGroupId    = groupId;
+  window._settingsIsAdmin    = role === 'admin';
+  window._settingsIsModerator = role === 'moderator';
+  const name = (window._groupNames && groupId && window._groupNames[groupId]) || 'Group';
+  document.getElementById('settings-group-name').textContent = name;
   document.getElementById('group-settings-overlay').classList.remove('hidden');
+  if (window.loadGroupSettings && groupId) window.loadGroupSettings(groupId);
 }
 
 function closeGroupSettings() {
@@ -516,6 +519,11 @@ function addChannel() {
     return;
   }
   hideMessage('settings-channel-msg');
+  input.value = '';
+
+  if (window.saveChannel && window._settingsGroupId) {
+    window.saveChannel(window._settingsGroupId, name);
+  }
 
   const li = document.createElement('li');
   li.className = 'settings-channel-item';
@@ -524,7 +532,6 @@ function addChannel() {
     <button class="settings-delete-btn" onclick="removeChannelItem(this)">&#128465;</button>
   `;
   document.getElementById('settings-channel-list').appendChild(li);
-  input.value = '';
 }
 
 function removeChannelItem(btn) {
@@ -533,8 +540,9 @@ function removeChannelItem(btn) {
 
 // --- New DM modal ---
 function openNewDMModal() {
-  document.getElementById('dm-search-input').value = '';
-  filterDMSearch('');
+  const input = document.getElementById('dm-email-input');
+  if (input) input.value = '';
+  hideMessage('dm-search-message');
   document.getElementById('new-dm-overlay').classList.remove('hidden');
 }
 
@@ -578,7 +586,24 @@ function startNewDM(name, el) {
 // --- Chat page: toggle group accordion ---
 function toggleGroup(btn) {
   const section = btn.closest('.group-section');
-  const arrow   = btn.querySelector('.toggle-arrow');
-  const isOpen  = section.classList.toggle('open');
-  arrow.innerHTML = isOpen ? '&#9660;' : '&#9654;';
+  const isOpen  = section.classList.contains('open');
+
+  // Collapse all groups
+  document.querySelectorAll('.group-section').forEach(s => {
+    s.classList.remove('open');
+    const arrow = s.querySelector('.toggle-arrow');
+    if (arrow) arrow.innerHTML = '&#9654;';
+  });
+
+  // If it was closed, open it and load first channel
+  if (!isOpen) {
+    section.classList.add('open');
+    btn.querySelector('.toggle-arrow').innerHTML = '&#9660;';
+    const firstChannel = section.querySelector('.channel-item');
+    if (firstChannel) {
+      document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
+      firstChannel.classList.add('active');
+      switchToChannel(firstChannel);
+    }
+  }
 }

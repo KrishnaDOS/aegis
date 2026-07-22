@@ -13,7 +13,7 @@
     <a href="chat.html" class="top-nav-logo">AEGIS</a>
     <div class="top-nav-right">
       <span class="top-nav-encrypt">&#128274; Post-Quantum Encrypted</span>
-      <a href="index.html" class="btn btn-ghost btn-sm">Log Out</a>
+      <a href="#" class="btn btn-ghost btn-sm" onclick="handleLogout()">Log Out</a>
     </div>
   </nav>
 
@@ -25,44 +25,12 @@
       <!-- Scrollable content -->
       <div class="sidebar-scroll">
 
-        <p class="sidebar-section-title">My Groups</p>
-
-        <div class="group-section open">
-          <button class="group-toggle" onclick="toggleGroup(this)">
-            <div class="group-toggle-icon">43</div>
-            <span class="group-toggle-name">CSC4350</span>
-            <span class="group-settings-icon" onclick="openGroupSettings(); event.stopPropagation();" title="Group Settings">&#9881;</span>
-            <span class="toggle-arrow">&#9660;</span>
-          </button>
-          <ul class="channel-list">
-            <li class="channel-item active" onclick="switchToChannel(this)" data-channel="general" data-group="CSC4350" data-desc="CSC4350 general discussion"># general</li>
-            <li class="channel-item" onclick="switchToChannel(this)" data-channel="announcements" data-group="CSC4350" data-desc="Official announcements"># announcements</li>
-            <li class="channel-item" onclick="switchToChannel(this)" data-channel="assignments" data-group="CSC4350" data-desc="Assignment discussion"># assignments</li>
-            <li class="channel-item channel-private">&#128274; instructors-only</li>
-          </ul>
+        <div class="dm-section-header">
+          <span class="section-label">My Groups</span>
+          <button class="dm-new-btn" title="Join a Group" onclick="openJoinModal()">+</button>
         </div>
-
-        <div class="group-section">
-          <button class="group-toggle" onclick="toggleGroup(this)">
-            <div class="group-toggle-icon">31</div>
-            <span class="group-toggle-name">CSC3120</span>
-            <span class="toggle-arrow">&#9654;</span>
-          </button>
-          <ul class="channel-list">
-            <li class="channel-item" onclick="switchToChannel(this)" data-channel="general" data-group="CSC3120" data-desc="CSC3120 general discussion"># general</li>
-            <li class="channel-item" onclick="switchToChannel(this)" data-channel="homework" data-group="CSC3120" data-desc="Homework discussion"># homework</li>
-          </ul>
-        </div>
-
-        <div class="group-section">
-          <button class="group-toggle" onclick="toggleGroup(this)">
-            <div class="group-toggle-icon">46</div>
-            <span class="group-toggle-name">CSC4610</span>
-            <span class="toggle-arrow">&#9654;</span>
-          </button>
-          <ul class="channel-list">
-            <li class="channel-item" onclick="switchToChannel(this)" data-channel="general" data-group="CSC4610" data-desc="CSC4610 general discussion"># general</li>
-          </ul>
+        <div id="groups-container">
+          <p style="padding:12px; color:var(--text-3); font-size:13px;">Loading...</p>
         </div>
 
         <div class="sidebar-rule"></div>
@@ -74,31 +42,20 @@
             <button class="dm-new-btn" title="New DM" onclick="openNewDMModal()">+</button>
           </div>
 
-          <ul class="dm-list">
-            <li class="dm-item" onclick="switchToDM('alice', 'online', this)">
-              <div class="dm-avatar">A</div>
-              <span class="dm-name">alice</span>
-              <span class="dm-status online"></span>
-            </li>
-            <li class="dm-item" onclick="switchToDM('bob', 'online', this)">
-              <div class="dm-avatar">B</div>
-              <span class="dm-name">bob</span>
-              <span class="dm-status online"></span>
-            </li>
-            <li class="dm-item" onclick="switchToDM('charlie', 'offline', this)">
-              <div class="dm-avatar">C</div>
-              <span class="dm-name">charlie</span>
-              <span class="dm-status offline"></span>
-            </li>
-          </ul>
+          <a href="message-requests.html" id="msg-requests-link" class="hidden" style="font-size:12px;padding:3px 8px;color:var(--text-3);display:flex;align-items:center;gap:6px;text-decoration:none;">
+            Message Requests
+            <span id="msg-req-count" style="background:#e74c3c;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;"></span>
+          </a>
+          <ul class="dm-list" id="dm-list"></ul>
         </div>
 
       </div>
 
       <!-- Admin section (visible to Group Admins only) -->
-      <div class="sidebar-admin">
+      <div class="sidebar-admin hidden" id="sidebar-admin-section">
         <p class="sidebar-admin-label">&#128737; Group Admin</p>
-        <a href="audit.html?group=CSC4350" class="sidebar-admin-link">Audit Log</a>
+        <a href="#" class="sidebar-admin-link" id="audit-log-link">Audit Log</a>
+        <a href="#" class="sidebar-admin-link" id="join-requests-link">Join Requests <span id="join-req-count" class="hidden" style="background:#e74c3c;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px;"></span></a>
       </div>
 
       <!-- User bar -->
@@ -139,23 +96,7 @@
 
       <!-- Messages -->
       <div class="chat-messages" id="chat-messages-area">
-        <div class="message">
-          <div class="message-avatar">A</div>
-          <div class="message-body">
-            <span class="message-author">alice</span>
-            <span class="message-time">Today at 10:32 AM</span>
-            <p class="message-text">Hey everyone, welcome to Aegis!</p>
-          </div>
-        </div>
-
-        <div class="message">
-          <div class="message-avatar">B</div>
-          <div class="message-body">
-            <span class="message-author">bob</span>
-            <span class="message-time">Today at 10:34 AM</span>
-            <p class="message-text">Messages are end-to-end encrypted.</p>
-          </div>
-        </div>
+        <p style="padding:16px;color:var(--text-3);font-size:13px;">Loading messages...</p>
       </div>
 
       <!-- Message input -->
@@ -248,6 +189,12 @@
         <span id="attach-file-name" class="attach-file-name"></span>
         <button class="attach-remove-btn" onclick="clearAttach()">&#10005;</button>
       </div>
+      <div id="upload-progress" class="hidden" style="margin:8px 0 4px;">
+        <div style="background:var(--bg-light);border-radius:4px;height:6px;">
+          <div id="upload-progress-bar" style="background:var(--accent);height:6px;border-radius:4px;width:0%;transition:width 0.2s;"></div>
+        </div>
+        <p style="font-size:12px;color:var(--text-3);margin-top:4px;text-align:center;">Uploading...</p>
+      </div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeAttachModal()">Cancel</button>
         <button class="btn btn-primary" id="attach-send-btn" onclick="sendAttach()" disabled>Send File</button>
@@ -259,8 +206,17 @@
   <div id="group-settings-overlay" class="modal-overlay hidden" onclick="closeGroupSettings()">
     <div class="modal settings-modal" onclick="event.stopPropagation()">
       <div class="modal-header">
-        <h3>Group Settings — CSC4350</h3>
+        <h3>Group Settings — <span id="settings-group-name">Group</span></h3>
         <button class="panel-close" onclick="closeGroupSettings()">&times;</button>
+      </div>
+
+      <div class="settings-section">
+        <p class="settings-section-label">My Nickname in this Group</p>
+        <div class="settings-add-channel">
+          <input type="text" id="nickname-input" class="join-input" placeholder="Enter your nickname (optional)" maxlength="30" />
+          <button class="btn btn-primary btn-sm" onclick="saveNickname()">Save</button>
+        </div>
+        <div id="nickname-msg" class="form-message hidden"></div>
       </div>
 
       <div class="settings-section">
@@ -322,11 +278,37 @@
             <button class="settings-delete-btn" onclick="removeChannelItem(this)">&#128465;</button>
           </li>
         </ul>
-        <div class="settings-add-channel">
+        <div class="settings-add-channel" id="settings-add-channel-row">
           <input type="text" id="new-channel-input" class="join-input" placeholder="New channel name" />
           <button class="btn btn-primary btn-sm" onclick="addChannel()">Add</button>
         </div>
         <div id="settings-channel-msg" class="form-message hidden"></div>
+      </div>
+
+      <div class="settings-section hidden" id="settings-audit-log-row">
+        <p class="settings-section-label">Audit Log</p>
+        <a id="settings-audit-link" href="#" class="btn btn-ghost btn-full">View Audit Log</a>
+      </div>
+
+      <div class="settings-section hidden" id="settings-danger-zone">
+        <p class="settings-section-label" style="color:var(--danger, #e74c3c);">Danger Zone</p>
+        <button class="btn btn-danger btn-full" onclick="deleteGroup()">Delete Group</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Join Group modal -->
+  <div id="join-group-overlay" class="modal-overlay hidden" onclick="closeJoinModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Join a Group</h3>
+        <button class="panel-close" onclick="closeJoinModal()">&times;</button>
+      </div>
+      <input type="text" id="join-code-input" class="join-input" placeholder="Enter invite code (e.g. AEG-XXXX-XXXX)" />
+      <div id="join-group-message" class="form-message hidden"></div>
+      <div class="modal-actions" style="margin-top:12px;">
+        <button class="btn btn-ghost" onclick="closeJoinModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="joinGroupFromChat()">Join</button>
       </div>
     </div>
   </div>
@@ -338,26 +320,751 @@
         <h3>Start a New DM</h3>
         <button class="panel-close" onclick="closeNewDMModal()">&times;</button>
       </div>
-      <input type="text" id="dm-search-input" class="join-input" placeholder="Search members..." oninput="filterDMSearch(this.value)" />
-      <ul class="new-dm-list" id="new-dm-list">
-        <li class="new-dm-item" onclick="startNewDM('dave', this)">
-          <div class="dm-avatar">D</div>
-          <span class="dm-name">dave</span>
-          <span class="dm-status online"></span>
-        </li>
-        <li class="new-dm-item" onclick="startNewDM('eve', this)">
-          <div class="dm-avatar">E</div>
-          <span class="dm-name">eve</span>
-          <span class="dm-status offline"></span>
-        </li>
-        <li class="new-dm-item" onclick="startNewDM('frank', this)">
-          <div class="dm-avatar">F</div>
-          <span class="dm-name">frank</span>
-          <span class="dm-status online"></span>
-        </li>
-      </ul>
+      <input type="email" id="dm-email-input" class="join-input" placeholder="Enter user's email address" />
+      <div id="dm-search-message" class="form-message hidden"></div>
+      <div class="modal-actions" style="margin-top:12px;">
+        <button class="btn btn-ghost" onclick="closeNewDMModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="startDMByEmail()">Start DM</button>
+      </div>
     </div>
   </div>
+
+  <!-- Firebase: auth guard + load sidebar + messages -->
+  <script type="module">
+    import { initializeApp }    from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc, updateDoc, doc, getDoc, setDoc, deleteDoc, arrayUnion, arrayRemove, deleteField, onSnapshot, orderBy, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytesResumable, getDownloadURL }
+      from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDcugecgT1ZS0iGxpamr9qG7PDnQ-SlFp4",
+      authDomain: "aegis-f5e17.firebaseapp.com",
+      projectId: "aegis-f5e17",
+      storageBucket: "aegis-f5e17.firebasestorage.app",
+      messagingSenderId: "878102859879",
+      appId: "1:878102859879:web:813def60200064c15904c2"
+    };
+
+    const app     = initializeApp(firebaseConfig);
+    const auth    = getAuth(app);
+    const db      = getFirestore(app);
+    const storage = getStorage(app);
+
+    let currentUser       = null;
+    let currentGroupId    = null;
+    let currentChannelId  = null;
+    let currentDMId       = null;
+    let unsubMessages     = null;
+    let myNicknames       = {};
+
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    async function updateAdminSection(groupId) {
+      const section = document.getElementById('sidebar-admin-section');
+      if (!section) return;
+      if (window._adminGroupIds && window._adminGroupIds.has(groupId)) {
+        section.classList.remove('hidden');
+        const auditLink = document.getElementById('audit-log-link');
+        if (auditLink) auditLink.href = `audit.html?groupId=${groupId}`;
+        const reqLink = document.getElementById('join-requests-link');
+        if (reqLink) reqLink.href = `requests.html?groupId=${groupId}`;
+
+        const countBadge = document.getElementById('join-req-count');
+        if (countBadge) {
+          const reqSnap = await getDocs(collection(db, 'groups', groupId, 'joinRequests'));
+          if (reqSnap.empty) {
+            countBadge.classList.add('hidden');
+          } else {
+            countBadge.textContent = reqSnap.size;
+            countBadge.classList.remove('hidden');
+          }
+        }
+      } else {
+        section.classList.add('hidden');
+      }
+    }
+
+    async function loadMsgRequestCount(uid) {
+      const snap     = await getDocs(collection(db, 'messageRequests', uid, 'incoming'));
+      const link     = document.getElementById('msg-requests-link');
+      const countEl  = document.getElementById('msg-req-count');
+      if (!snap.empty) {
+        countEl.textContent = snap.size;
+        link.classList.remove('hidden');
+      } else {
+        link.classList.add('hidden');
+      }
+    }
+
+    async function logAudit(groupId, type, action) {
+      try {
+        await addDoc(collection(db, 'groups', groupId, 'auditLog'), {
+          type, action,
+          userEmail: currentUser.email,
+          userUID:   currentUser.uid,
+          timestamp: serverTimestamp()
+        });
+      } catch (e) { /* silently ignore */ }
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      currentUser = user;
+      const nameEl = document.querySelector('.user-name');
+      if (nameEl) nameEl.textContent = user.email.split('@')[0];
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) myNicknames = userDoc.data().nicknames || {};
+      await loadSidebar(user.uid);
+      await loadDMList(user.uid);
+      await loadMsgRequestCount(user.uid);
+    });
+
+    async function loadSidebar(uid) {
+      const container    = document.getElementById('groups-container');
+      const targetGroupId = new URLSearchParams(window.location.search).get('groupId');
+      const [ownerSnap, memberSnap] = await Promise.all([
+        getDocs(query(collection(db, 'groups'), where('ownerID', '==', uid))),
+        getDocs(query(collection(db, 'groups'), where('members', 'array-contains', uid)))
+      ]);
+
+      const groupMap = new Map();
+      ownerSnap.forEach(d => groupMap.set(d.id, d));
+      memberSnap.forEach(d => groupMap.set(d.id, d));
+
+      container.innerHTML = '';
+
+      if (groupMap.size === 0) {
+        container.innerHTML = '<p style="padding:12px;color:var(--text-3);font-size:13px;">No groups yet.</p>';
+        return;
+      }
+
+      let autoLoadChan = null;
+      window._groupNames    = {};
+      window._adminGroupIds = new Set();
+
+      for (const groupDoc of groupMap.values()) {
+        const g       = groupDoc.data();
+        const groupId = groupDoc.id;
+        const isAdmin    = g.ownerID === uid;
+        if (isAdmin) window._adminGroupIds.add(groupId);
+        const isMod      = !isAdmin && g.roles && g.roles[uid] === 'moderator';
+        const userRole   = isAdmin ? 'admin' : isMod ? 'moderator' : 'member';
+        const canManage  = isAdmin || isMod;
+        const initials   = g.name ? g.name.substring(0, 2).toUpperCase() : '??';
+        window._groupNames[groupId] = g.name;
+
+        // Open the targeted group; if none targeted, open the first group
+        const isOpen  = targetGroupId ? groupId === targetGroupId : autoLoadChan === null;
+        const openCls = isOpen ? ' open' : '';
+        const arrow   = isOpen ? '&#9660;' : '&#9654;';
+
+        const chSnap = await getDocs(collection(db, 'groups', groupId, 'channels'));
+
+        let channelsHTML = '';
+        chSnap.forEach(chanDoc => {
+          const c = chanDoc.data();
+          const shouldAuto = isOpen && autoLoadChan === null;
+          if (shouldAuto) autoLoadChan = { groupId, channelId: chanDoc.id, channelName: c.name, groupName: g.name };
+          channelsHTML += `<li class="channel-item${shouldAuto ? ' active' : ''}"
+              onclick="switchToChannel(this)"
+              data-channel="${esc(c.name)}"
+              data-group="${esc(g.name)}"
+              data-group-id="${groupId}"
+              data-channel-id="${chanDoc.id}"
+              data-desc="${esc(g.name)} — ${esc(c.name)}"># ${esc(c.name)}</li>`;
+        });
+
+        const section = document.createElement('div');
+        section.className = 'group-section' + openCls;
+        section.innerHTML = `
+          <button class="group-toggle" onclick="toggleGroup(this)">
+            <div class="group-toggle-icon">${initials}</div>
+            <span class="group-toggle-name">${esc(g.name)}</span>
+            <span class="group-settings-icon" onclick="openGroupSettings('${groupId}','${userRole}');event.stopPropagation();" title="Group Settings">&#9881;</span>
+            <span class="toggle-arrow">${arrow}</span>
+          </button>
+          <ul class="channel-list">${channelsHTML}</ul>`;
+        container.appendChild(section);
+      }
+
+      if (autoLoadChan) {
+        currentGroupId   = autoLoadChan.groupId;
+        currentChannelId = autoLoadChan.channelId;
+        document.getElementById('chat-title').textContent       = '# ' + autoLoadChan.channelName;
+        document.getElementById('chat-desc').textContent        = autoLoadChan.groupName + ' — ' + autoLoadChan.channelName;
+        document.getElementById('chat-input-field').placeholder = 'Message #' + autoLoadChan.channelName;
+        updateAdminSection(autoLoadChan.groupId);
+        window.loadMessages(autoLoadChan.groupId, autoLoadChan.channelId);
+      }
+    }
+
+    window.loadMessages = function(groupId, channelId) {
+      currentGroupId   = groupId;
+      currentChannelId = channelId;
+      currentDMId      = null;
+      updateAdminSection(groupId);
+
+      if (unsubMessages) { unsubMessages(); unsubMessages = null; }
+
+      const area = document.getElementById('chat-messages-area');
+      area.innerHTML = '<p style="padding:16px;color:var(--text-3);font-size:13px;">Loading messages...</p>';
+
+      const q = query(
+        collection(db, 'groups', groupId, 'channels', channelId, 'messages'),
+        orderBy('createdAt', 'asc')
+      );
+
+      unsubMessages = onSnapshot(q, async (snap) => {
+        area.innerHTML = '';
+        if (snap.empty) {
+          area.innerHTML = '<p style="padding:16px;color:var(--text-3);font-size:13px;">No messages yet. Say hello!</p>';
+          return;
+        }
+
+        const nicknameMap = {};
+        if (myNicknames[groupId]) nicknameMap[currentUser.uid] = myNicknames[groupId];
+        const otherUids = [...new Set(snap.docs.map(d => d.data().senderUID).filter(u => u && u !== currentUser.uid))];
+        await Promise.all(otherUids.map(async uid => {
+          const userDoc = await getDoc(doc(db, 'users', uid));
+          if (userDoc.exists()) {
+            const nicknames = userDoc.data().nicknames || {};
+            if (nicknames[groupId]) nicknameMap[uid] = nicknames[groupId];
+          }
+        }));
+
+        for (const msgDoc of snap.docs) {
+          const m      = msgDoc.data();
+          const uid    = m.senderUID || (m.senderEmail === currentUser.email ? currentUser.uid : null);
+          const name   = (uid && nicknameMap[uid]) || (m.senderEmail ? m.senderEmail.split('@')[0] : 'User');
+          const init   = name.charAt(0).toUpperCase();
+          const time   = m.createdAt ? m.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now';
+          const isMine = m.senderEmail === currentUser.email;
+          const el     = document.createElement('div');
+          el.className = 'message';
+          el.dataset.msgId     = msgDoc.id;
+          el.dataset.groupId   = groupId;
+          el.dataset.channelId = channelId;
+
+          const isFile = m.type === 'file';
+          let body;
+          if (isFile) {
+            body = `<div class="message-file">&#128196; <a href="${esc(m.fileURL || '')}" target="_blank" download="${esc(m.fileName || 'file')}" style="color:var(--accent);">${esc(m.fileName || 'File')}</a> <span style="font-size:11px;color:var(--text-3);">(${formatFileSize(m.fileSize || 0)})</span></div>`;
+          } else {
+            const text = m.text || '';
+            body = `<p class="message-text">${esc(text)}</p>${isMine ? '<button class="msg-edit-btn" onclick="startEditMessage(this)" title="Edit">&#9999;</button>' : ''}`;
+          }
+
+          el.innerHTML = `
+            <div class="message-avatar">${esc(init)}</div>
+            <div class="message-body">
+              <div class="message-header">
+                <span class="message-author">${esc(name)}</span>
+                <span class="message-time">${time}</span>
+                ${m.edited ? '<span style="font-size:11px;color:var(--text-3);">(edited)</span>' : ''}
+              </div>
+              ${body}
+            </div>`;
+          area.appendChild(el);
+        }
+        area.scrollTop = area.scrollHeight;
+      });
+    };
+
+    window.sendMessage = async function() {
+      const input = document.getElementById('chat-input-field');
+      const text  = input.value.trim();
+      if (!text || !currentUser) return;
+      input.value = '';
+
+      const base = { senderEmail: currentUser.email, senderUID: currentUser.uid, createdAt: serverTimestamp() };
+
+      if (currentDMId) {
+        await addDoc(collection(db, 'dms', currentDMId, 'messages'), { ...base, text });
+      } else if (currentGroupId && currentChannelId) {
+        await addDoc(collection(db, 'groups', currentGroupId, 'channels', currentChannelId, 'messages'), { ...base, text });
+      }
+    };
+
+    async function loadDMList(uid) {
+      const dmList = document.getElementById('dm-list');
+      const q = query(collection(db, 'dms'), where('participants', 'array-contains', uid));
+      const snap = await getDocs(q);
+      dmList.innerHTML = '';
+      snap.forEach(dmDoc => {
+        const d        = dmDoc.data();
+        const otherUID = d.participants.find(p => p !== uid);
+        const otherEmail = d.participantEmails ? (d.participantEmails[otherUID] || 'Unknown') : 'Unknown';
+        const name     = otherEmail.split('@')[0];
+        const li       = document.createElement('li');
+        li.className   = 'dm-item';
+        li.dataset.dmId = dmDoc.id;
+        li.innerHTML   = `
+          <div class="dm-avatar">${esc(name.charAt(0).toUpperCase())}</div>
+          <span class="dm-name">${esc(name)}</span>
+          <span class="dm-status online"></span>`;
+        li.onclick = function() { openDM(dmDoc.id, otherEmail, li); };
+        dmList.appendChild(li);
+      });
+    }
+
+    function openDM(dmId, otherEmail, el) {
+      currentDMId       = dmId;
+      currentGroupId    = null;
+      currentChannelId  = null;
+
+      if (unsubMessages) { unsubMessages(); unsubMessages = null; }
+
+      const name = otherEmail.split('@')[0];
+      document.getElementById('chat-title').textContent       = '@ ' + name;
+      document.getElementById('chat-desc').textContent        = otherEmail;
+      document.getElementById('chat-desc').style.color        = '';
+      document.getElementById('chat-input-field').placeholder = 'Message ' + name;
+
+      document.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
+      document.querySelectorAll('.dm-item').forEach(i => i.classList.remove('dm-item-active'));
+      if (el) el.classList.add('dm-item-active');
+
+      const area = document.getElementById('chat-messages-area');
+      area.innerHTML = '<p style="padding:16px;color:var(--text-3);font-size:13px;">Loading messages...</p>';
+
+      const q = query(collection(db, 'dms', dmId, 'messages'), orderBy('createdAt', 'asc'));
+      unsubMessages = onSnapshot(q, async (snap) => {
+        area.innerHTML = '';
+        if (snap.empty) {
+          area.innerHTML = '<p style="padding:16px;color:var(--text-3);font-size:13px;">No messages yet. Say hello!</p>';
+          return;
+        }
+        for (const msgDoc of snap.docs) {
+          const m      = msgDoc.data();
+          const sname  = m.senderEmail ? m.senderEmail.split('@')[0] : 'User';
+          const time   = m.createdAt ? m.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now';
+          const isMine = m.senderEmail === currentUser.email;
+          const text   = m.type === 'file' ? null : (m.text || '');
+          const el     = document.createElement('div');
+          el.className = 'message';
+          el.dataset.msgId = msgDoc.id;
+          el.dataset.dmId  = dmId;
+
+          const body = m.type === 'file'
+            ? `<div class="message-file">&#128196; <a href="${esc(m.fileURL || '')}" target="_blank" download="${esc(m.fileName || 'file')}" style="color:var(--accent);">${esc(m.fileName || 'File')}</a> <span style="font-size:11px;color:var(--text-3);">(${formatFileSize(m.fileSize || 0)})</span></div>`
+            : `<p class="message-text">${esc(text)}</p>${isMine ? '<button class="msg-edit-btn" onclick="startEditMessage(this)" title="Edit">&#9999;</button>' : ''}`;
+
+          el.innerHTML = `
+            <div class="message-avatar">${esc(sname.charAt(0).toUpperCase())}</div>
+            <div class="message-body">
+              <div class="message-header">
+                <span class="message-author">${esc(sname)}</span>
+                <span class="message-time">${time}</span>
+                ${m.edited ? '<span style="font-size:11px;color:var(--text-3);">(edited)</span>' : ''}
+              </div>
+              ${body}
+            </div>`;
+          area.appendChild(el);
+        }
+        area.scrollTop = area.scrollHeight;
+      });
+    }
+
+    window.startDMByEmail = async function() {
+      const input = document.getElementById('dm-email-input');
+      const email = input.value.trim().toLowerCase();
+
+      if (!email) { showMessage('dm-search-message', 'Enter an email address.', 'error'); return; }
+      if (email === currentUser.email.toLowerCase()) {
+        showMessage('dm-search-message', 'You cannot DM yourself.', 'error'); return;
+      }
+
+      try {
+        const q    = query(collection(db, 'users'), where('email', '==', email));
+        const snap = await getDocs(q);
+        if (snap.empty) { showMessage('dm-search-message', 'No user found with that email.', 'error'); return; }
+
+        const otherUser = snap.docs[0].data();
+        const dmId      = [currentUser.uid, otherUser.uid].sort().join('_');
+        const dmSnap    = await getDoc(doc(db, 'dms', dmId));
+
+        // DM already exists — open it directly
+        if (dmSnap.exists()) {
+          closeNewDMModal();
+          await loadDMList(currentUser.uid);
+          const li = document.querySelector(`[data-dm-id="${dmId}"]`);
+          openDM(dmId, otherUser.email, li);
+          return;
+        }
+
+        // Check if request already sent
+        const reqRef  = doc(db, 'messageRequests', otherUser.uid, 'incoming', currentUser.uid);
+        const reqSnap = await getDoc(reqRef);
+        if (reqSnap.exists()) {
+          showMessage('dm-search-message', 'You already sent a request to this user.', 'error');
+          return;
+        }
+
+        // Send message request
+        await setDoc(reqRef, {
+          senderEmail: currentUser.email,
+          senderUID:   currentUser.uid,
+          sentAt:      serverTimestamp()
+        });
+
+        input.value = '';
+        showMessage('dm-search-message', `Message request sent to ${otherUser.email.split('@')[0]}!`, 'success');
+
+      } catch (e) {
+        showMessage('dm-search-message', 'Something went wrong. Try again.', 'error');
+      }
+    };
+
+    window.loadGroupSettings = async function(groupId) {
+      const isAdmin   = window._settingsIsAdmin;
+      const isMod     = window._settingsIsModerator;
+      const canManage = isAdmin || isMod;
+
+      const channelList = document.getElementById('settings-channel-list');
+      channelList.innerHTML = '<li style="padding:8px;color:var(--text-3);font-size:13px;">Loading...</li>';
+
+      const [groupSnap, chSnap] = await Promise.all([
+        getDoc(doc(db, 'groups', groupId)),
+        getDocs(collection(db, 'groups', groupId, 'channels'))
+      ]);
+
+      const nicknameInput = document.getElementById('nickname-input');
+      if (nicknameInput) nicknameInput.value = myNicknames[groupId] || '';
+      hideMessage('nickname-msg');
+
+      channelList.innerHTML = '';
+      if (chSnap.empty) {
+        channelList.innerHTML = '<li style="padding:8px;color:var(--text-3);font-size:13px;">No channels yet.</li>';
+      } else {
+        chSnap.forEach(chanDoc => {
+          const c  = chanDoc.data();
+          const li = document.createElement('li');
+          li.className = 'settings-channel-item';
+          li.innerHTML = `<span># ${esc(c.name)}</span>
+            ${canManage ? `<button class="settings-delete-btn" onclick="deleteChannel(this,'${chanDoc.id}')">&#128465;</button>` : ''}`;
+          channelList.appendChild(li);
+        });
+      }
+
+      const dangerZone = document.getElementById('settings-danger-zone');
+      if (dangerZone) dangerZone.classList.toggle('hidden', !isAdmin);
+
+      const auditRow = document.getElementById('settings-audit-log-row');
+      if (auditRow) {
+        auditRow.classList.toggle('hidden', !isAdmin);
+        const link = document.getElementById('settings-audit-link');
+        if (link) link.href = `audit.html?groupId=${groupId}`;
+      }
+
+      const addChannelRow = document.getElementById('settings-add-channel-row');
+      if (addChannelRow) addChannelRow.classList.toggle('hidden', !canManage);
+
+      const memberList = document.getElementById('settings-member-list');
+      memberList.innerHTML = '<li style="padding:8px;color:var(--text-3);font-size:13px;">Loading members...</li>';
+
+      const groupData = groupSnap.exists() ? groupSnap.data() : {};
+      const roles     = groupData.roles || {};
+      const roleLabel = r => r === 'admin' ? 'Group Admin' : r === 'moderator' ? 'Moderator' : 'Member';
+
+      if (Object.keys(roles).length === 0) {
+        const n = currentUser.email.split('@')[0];
+        memberList.innerHTML = `<li class="settings-member-item">
+          <div class="member-avatar">${esc(n.charAt(0).toUpperCase())}</div>
+          <span class="settings-member-name">${esc(n)}</span>
+          <span style="font-size:12px;color:var(--text-3);margin-left:auto;">Group Admin</span></li>`;
+        return;
+      }
+
+      memberList.innerHTML = '';
+      for (const [uid, role] of Object.entries(roles)) {
+        const userSnap = await getDoc(doc(db, 'users', uid));
+        const email    = userSnap.exists() ? userSnap.data().email : uid;
+        const name     = email.split('@')[0];
+        const isMe     = uid === currentUser.uid;
+        const li       = document.createElement('li');
+        li.className   = 'settings-member-item';
+
+        if (isAdmin && !isMe) {
+          li.innerHTML = `
+            <div class="member-avatar">${esc(name.charAt(0).toUpperCase())}</div>
+            <span class="settings-member-name">${esc(name)}</span>
+            <select class="settings-role-select" onchange="saveMemberRole('${uid}', this.value)">
+              <option value="admin"     ${role === 'admin'     ? 'selected' : ''}>Group Admin</option>
+              <option value="moderator" ${role === 'moderator' ? 'selected' : ''}>Moderator</option>
+              <option value="member"    ${role === 'member'    ? 'selected' : ''}>Member</option>
+            </select>
+            <button class="btn btn-danger btn-sm" onclick="removeMemberFromGroup('${uid}','${esc(name)}',this)">Remove</button>`;
+        } else {
+          li.innerHTML = `
+            <div class="member-avatar">${esc(name.charAt(0).toUpperCase())}</div>
+            <span class="settings-member-name">${esc(name)}</span>
+            <span style="font-size:12px;color:var(--text-3);margin-left:auto;">${esc(roleLabel(role))}</span>`;
+        }
+        memberList.appendChild(li);
+      }
+    };
+
+    window.saveChannel = async function(groupId, channelName) {
+      await addDoc(collection(db, 'groups', groupId, 'channels'), {
+        name:      channelName,
+        groupID:   groupId,
+        isHidden:  false,
+        role:      'member',
+        createdAt: serverTimestamp()
+      });
+      await logAudit(groupId, 'channel', `Added channel #${channelName}`);
+      await loadSidebar(currentUser.uid);
+    };
+
+    window.saveNickname = async function() {
+      const nickname = document.getElementById('nickname-input').value.trim();
+      const groupId  = window._settingsGroupId;
+      try {
+        await updateDoc(doc(db, 'users', currentUser.uid), {
+          [`nicknames.${groupId}`]: nickname || deleteField()
+        });
+
+        // Update in-memory cache immediately
+        if (nickname) {
+          myNicknames[groupId] = nickname;
+        } else {
+          delete myNicknames[groupId];
+        }
+
+        showMessage('nickname-msg', 'Nickname saved!', 'success');
+        setTimeout(() => hideMessage('nickname-msg'), 2000);
+
+        if (currentGroupId && currentChannelId) {
+          window.loadMessages(currentGroupId, currentChannelId);
+        }
+      } catch (e) {
+        showMessage('nickname-msg', 'Could not save. Try again.', 'error');
+      }
+    };
+
+    window.saveMemberRole = async function(uid, role) {
+      if (!window._settingsIsAdmin) return;
+      try {
+        await updateDoc(doc(db, 'groups', window._settingsGroupId), { [`roles.${uid}`]: role });
+        await logAudit(window._settingsGroupId, 'member', `Changed a member's role to ${role}`);
+      } catch (e) { alert('Could not update role. Try again.'); }
+    };
+
+    window.removeMemberFromGroup = async function(uid, name, btn) {
+      if (!window._settingsIsAdmin) return;
+      if (!confirm(`Remove ${name} from the group?`)) return;
+      try {
+        await updateDoc(doc(db, 'groups', window._settingsGroupId), {
+          members:            arrayRemove(uid),
+          [`roles.${uid}`]:   deleteField()
+        });
+        await logAudit(window._settingsGroupId, 'member', `Removed member ${name}`);
+        btn.closest('.settings-member-item').remove();
+      } catch (e) { alert('Could not remove member. Try again.'); }
+    };
+
+    window.deleteChannel = async function(btn, channelId) {
+      if (!window._settingsIsAdmin && !window._settingsIsModerator) return;
+      if (!confirm('Delete this channel? This cannot be undone.')) return;
+      const channelName = btn.closest('.settings-channel-item').querySelector('span').textContent;
+      try {
+        await deleteDoc(doc(db, 'groups', window._settingsGroupId, 'channels', channelId));
+        await logAudit(window._settingsGroupId, 'channel', `Deleted channel ${channelName}`);
+        btn.closest('.settings-channel-item').remove();
+        await loadSidebar(currentUser.uid);
+      } catch (e) {
+        alert('Could not delete channel. Try again.');
+      }
+    };
+
+    window.deleteGroup = async function() {
+      if (!window._settingsIsAdmin) return;
+      const groupId = window._settingsGroupId;
+      const name    = (window._groupNames && window._groupNames[groupId]) || 'this group';
+
+      if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+
+      try {
+        await deleteDoc(doc(db, 'groups', groupId));
+        window.closeGroupSettings();
+
+        if (currentGroupId === groupId) {
+          currentGroupId   = null;
+          currentChannelId = null;
+          if (unsubMessages) { unsubMessages(); unsubMessages = null; }
+          document.getElementById('chat-title').textContent = '# welcome';
+          document.getElementById('chat-desc').textContent  = 'Select a channel to start chatting.';
+          document.getElementById('chat-messages-area').innerHTML =
+            '<p style="padding:16px;color:var(--text-3);font-size:13px;">Select a channel to start chatting.</p>';
+        }
+
+        await loadSidebar(currentUser.uid);
+      } catch (e) {
+        alert('Could not delete group. Try again.');
+      }
+    };
+
+    window.startEditMessage = function(btn) {
+      const msgDiv = btn.closest('.message');
+      const textEl = msgDiv.querySelector('.message-text');
+      const current = textEl.textContent;
+      textEl.style.display = 'none';
+      btn.style.display    = 'none';
+      const wrapper = document.createElement('div');
+      wrapper.className = 'edit-wrapper';
+      wrapper.style.cssText = 'display:flex;flex-direction:column;gap:6px;margin-top:4px;';
+      wrapper.innerHTML = `
+        <input class="edit-input" type="text" value="${esc(current)}"
+          style="padding:6px 10px;border:1px solid var(--border,#444);border-radius:6px;background:var(--bg-2,#2a2a2a);color:inherit;font-size:14px;width:100%;box-sizing:border-box;" />
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-primary btn-sm" onclick="saveEditMessage(this)">Save</button>
+          <button class="btn btn-ghost btn-sm" onclick="cancelEditMessage(this)">Cancel</button>
+        </div>`;
+      msgDiv.querySelector('.message-body').appendChild(wrapper);
+      wrapper.querySelector('.edit-input').focus();
+    };
+
+    window.saveEditMessage = async function(btn) {
+      const msgDiv    = btn.closest('.message');
+      const newText   = msgDiv.querySelector('.edit-input').value.trim();
+      if (!newText) return;
+      const msgId     = msgDiv.dataset.msgId;
+      const groupId   = msgDiv.dataset.groupId;
+      const channelId = msgDiv.dataset.channelId;
+      const dmId      = msgDiv.dataset.dmId;
+      try {
+        const msgRef = groupId && channelId
+          ? doc(db, 'groups', groupId, 'channels', channelId, 'messages', msgId)
+          : doc(db, 'dms', dmId, 'messages', msgId);
+
+        await updateDoc(msgRef, { text: newText, edited: true });
+      } catch (e) { alert('Could not edit message. Try again.'); }
+    };
+
+    window.cancelEditMessage = function(btn) {
+      const msgDiv = btn.closest('.message');
+      msgDiv.querySelector('.message-text').style.display = '';
+      const editBtn = msgDiv.querySelector('.msg-edit-btn');
+      if (editBtn) editBtn.style.display = '';
+      msgDiv.querySelector('.edit-wrapper').remove();
+    };
+
+    window.openJoinModal = function() {
+      document.getElementById('join-code-input').value = '';
+      hideMessage('join-group-message');
+      document.getElementById('join-group-overlay').classList.remove('hidden');
+    };
+
+    window.closeJoinModal = function() {
+      document.getElementById('join-group-overlay').classList.add('hidden');
+    };
+
+    window.joinGroupFromChat = async function() {
+      const code = document.getElementById('join-code-input').value.trim();
+      if (!code) { showMessage('join-group-message', 'Please enter an invite code.', 'error'); return; }
+
+      try {
+        const q    = query(collection(db, 'groups'), where('invite_code', '==', code), where('invite_enabled', '==', true));
+        const snap = await getDocs(q);
+
+        if (snap.empty) { showMessage('join-group-message', 'Invalid or expired invite code.', 'error'); return; }
+
+        const groupDoc = snap.docs[0];
+        const g = groupDoc.data();
+
+        if (g.ownerID === currentUser.uid || (g.members && g.members.includes(currentUser.uid))) {
+          showMessage('join-group-message', 'You are already in this group.', 'error');
+          return;
+        }
+
+        await updateDoc(groupDoc.ref, {
+          members:                      arrayUnion(currentUser.uid),
+          [`roles.${currentUser.uid}`]: 'member'
+        });
+        await logAudit(groupDoc.id, 'member', `Joined group "${g.name}"`);
+
+        window.closeJoinModal();
+        await loadSidebar(currentUser.uid);
+
+      } catch (e) {
+        showMessage('join-group-message', 'Could not join group. Try again.', 'error');
+      }
+    };
+
+    window.sendAttach = async function() {
+      const fileInput = document.getElementById('file-input');
+      const file      = fileInput.files && fileInput.files[0];
+      if (!file) return;
+
+      if (!currentGroupId && !currentDMId) {
+        alert('Please select a channel or DM first.'); return;
+      }
+      if (file.size > 25 * 1024 * 1024) {
+        alert('File too large. Max 25 MB.'); return;
+      }
+
+      const sendBtn     = document.getElementById('attach-send-btn');
+      const progressWrap = document.getElementById('upload-progress');
+      const progressBar  = document.getElementById('upload-progress-bar');
+
+      sendBtn.disabled     = true;
+      sendBtn.textContent  = 'Uploading...';
+      progressWrap.classList.remove('hidden');
+
+      const storagePath = currentGroupId && currentChannelId
+        ? `uploads/${currentGroupId}/${currentChannelId}/${Date.now()}_${file.name}`
+        : `uploads/dms/${currentDMId}/${Date.now()}_${file.name}`;
+
+      const uploadTask = uploadBytesResumable(ref(storage, storagePath), file);
+
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          progressBar.style.width = pct + '%';
+        },
+        () => {
+          sendBtn.disabled    = false;
+          sendBtn.textContent = 'Send File';
+          progressWrap.classList.add('hidden');
+          alert('Upload failed. Try again.');
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          const msgData = {
+            type:        'file',
+            fileName:    file.name,
+            fileSize:    file.size,
+            fileURL:     downloadURL,
+            senderEmail: currentUser.email,
+            senderUID:   currentUser.uid,
+            createdAt:   serverTimestamp()
+          };
+          if (currentGroupId && currentChannelId) {
+            await addDoc(collection(db, 'groups', currentGroupId, 'channels', currentChannelId, 'messages'), msgData);
+          } else if (currentDMId) {
+            await addDoc(collection(db, 'dms', currentDMId, 'messages'), msgData);
+          }
+          closeAttachModal();
+        }
+      );
+    };
+
+    window.handleLogout = function() {
+      signOut(auth).then(() => { window.location.href = 'index.html'; });
+    };
+  </script>
 
   <script src="validation.js"></script>
   <script src="script.js"></script>

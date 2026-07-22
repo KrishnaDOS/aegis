@@ -13,12 +13,15 @@
     <a href="chat.html" class="top-nav-logo">AEGIS</a>
     <div class="top-nav-right">
       <span class="top-nav-encrypt">&#128274; Post-Quantum Encrypted</span>
-      <a href="groups.html" class="btn btn-ghost btn-sm">My Groups</a>
-      <a href="index.html" class="btn btn-ghost btn-sm">Log Out</a>
+      <a href="#" class="btn btn-ghost btn-sm" onclick="handleLogout()">Log Out</a>
     </div>
   </nav>
 
   <div class="audit-layout">
+
+    <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+      <a href="javascript:history.back()" class="btn btn-ghost btn-sm" title="Go back" style="font-size:18px; line-height:1;">&times;</a>
+    </div>
 
     <!-- Page header -->
     <div class="audit-page-header">
@@ -43,7 +46,6 @@
         <option value="member">Member</option>
         <option value="channel">Channel</option>
         <option value="group">Group</option>
-        <option value="auth">Auth</option>
       </select>
     </div>
 
@@ -56,75 +58,126 @@
             <th>Action</th>
             <th>User</th>
             <th>Details</th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="audit-body">
-          <tr data-type="auth">
-            <td class="log-time">2026-07-05 10:30:01</td>
-            <td><span class="log-badge badge-auth">Auth</span></td>
-            <td class="log-user">alice</td>
-            <td class="log-detail">Logged in</td>
-          </tr>
-          <tr data-type="member">
-            <td class="log-time">2026-07-05 10:30:45</td>
-            <td><span class="log-badge badge-member">Member</span></td>
-            <td class="log-user">alice</td>
-            <td class="log-detail">Joined group <strong>CSC4350</strong></td>
-          </tr>
-          <tr data-type="channel">
-            <td class="log-time">2026-07-05 10:31:10</td>
-            <td><span class="log-badge badge-channel">Channel</span></td>
-            <td class="log-user">alice</td>
-            <td class="log-detail">Created channel <strong>#general</strong></td>
-          </tr>
-          <tr data-type="auth">
-            <td class="log-time">2026-07-05 10:32:00</td>
-            <td><span class="log-badge badge-auth">Auth</span></td>
-            <td class="log-user">bob</td>
-            <td class="log-detail">Logged in</td>
-          </tr>
-          <tr data-type="member">
-            <td class="log-time">2026-07-05 10:32:20</td>
-            <td><span class="log-badge badge-member">Member</span></td>
-            <td class="log-user">bob</td>
-            <td class="log-detail">Joined group <strong>CSC4350</strong></td>
-          </tr>
-          <tr data-type="message">
-            <td class="log-time">2026-07-05 10:32:35</td>
-            <td><span class="log-badge badge-message">Message</span></td>
-            <td class="log-user">alice</td>
-            <td class="log-detail">Sent message in <strong>#general</strong></td>
-          </tr>
-          <tr data-type="message">
-            <td class="log-time">2026-07-05 10:34:10</td>
-            <td><span class="log-badge badge-message">Message</span></td>
-            <td class="log-user">bob</td>
-            <td class="log-detail">Sent message in <strong>#general</strong></td>
-          </tr>
-          <tr data-type="member">
-            <td class="log-time">2026-07-05 10:40:00</td>
-            <td><span class="log-badge badge-member">Member</span></td>
-            <td class="log-user">alice</td>
-            <td class="log-detail">Assigned <strong>bob</strong> role: Moderator</td>
-          </tr>
-          <tr data-type="message">
-            <td class="log-time">2026-07-05 10:45:22</td>
-            <td><span class="log-badge badge-message">Message</span></td>
-            <td class="log-user">alice</td>
-            <td class="log-detail">Deleted a message in <strong>#general</strong></td>
-          </tr>
-          <tr data-type="group">
-            <td class="log-time">2026-07-05 11:00:00</td>
-            <td><span class="log-badge badge-group">Group</span></td>
-            <td class="log-user">alice</td>
-            <td class="log-detail">Created group <strong>CSC4610</strong></td>
-          </tr>
+          <tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text-3);">Loading...</td></tr>
         </tbody>
       </table>
       <p id="audit-no-results" class="audit-no-results hidden">No log entries found.</p>
     </div>
 
   </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, deleteDoc, query, orderBy }
+      from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDcugecgT1ZS0iGxpamr9qG7PDnQ-SlFp4",
+      authDomain: "aegis-f5e17.firebaseapp.com",
+      projectId: "aegis-f5e17",
+      storageBucket: "aegis-f5e17.firebasestorage.app",
+      messagingSenderId: "878102859879",
+      appId: "1:878102859879:web:813def60200064c15904c2"
+    };
+
+    const app     = initializeApp(firebaseConfig);
+    const auth    = getAuth(app);
+    const db      = getFirestore(app);
+    const groupId = new URLSearchParams(window.location.search).get('groupId');
+
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+
+      if (!groupId) {
+        document.getElementById('audit-body').innerHTML =
+          '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text-3);">No group specified.</td></tr>';
+        return;
+      }
+
+      const groupSnap = await getDoc(doc(db, 'groups', groupId));
+      if (!groupSnap.exists()) {
+        document.getElementById('audit-group-name').textContent = 'Unknown';
+        document.getElementById('audit-body').innerHTML =
+          '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text-3);">Group not found.</td></tr>';
+        return;
+      }
+
+      const g       = groupSnap.data();
+      const isAdmin = g.ownerID === user.uid || (g.roles && g.roles[user.uid] === 'admin');
+
+      if (!isAdmin) {
+        document.getElementById('audit-group-name').textContent = g.name;
+        document.getElementById('audit-body').innerHTML =
+          '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text-3);">Access denied. Group admins only.</td></tr>';
+        return;
+      }
+
+      document.getElementById('audit-group-name').textContent = g.name;
+      await loadAuditLog();
+    });
+
+    async function loadAuditLog() {
+      const tbody = document.getElementById('audit-body');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text-3);">Loading...</td></tr>';
+
+      const snap = await getDocs(
+        query(collection(db, 'groups', groupId, 'auditLog'), orderBy('timestamp', 'desc'))
+      );
+
+      if (snap.empty) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text-3);">No audit log entries yet.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = '';
+      snap.forEach(entryDoc => {
+        const e         = entryDoc.data();
+        const ts        = e.timestamp ? e.timestamp.toDate().toLocaleString() : 'Unknown';
+        const userName  = e.userEmail ? e.userEmail.split('@')[0] : 'Unknown';
+        const typeLabel = e.type || 'other';
+        const badgeClass = `badge-${typeLabel}`;
+
+        const tr = document.createElement('tr');
+        tr.dataset.type = typeLabel;
+        tr.innerHTML = `
+          <td class="log-time">${esc(ts)}</td>
+          <td><span class="log-badge ${badgeClass}">${esc(typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1))}</span></td>
+          <td class="log-user">${esc(userName)}</td>
+          <td class="log-detail">${esc(e.action || '')}</td>
+          <td><button class="settings-delete-btn" title="Remove entry" onclick="deleteEntry('${entryDoc.id}', this)">&#128465;</button></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.deleteEntry = async function(entryId, btn) {
+      if (!confirm('Remove this log entry?')) return;
+      const row = btn.closest('tr');
+      try {
+        await deleteDoc(doc(db, 'groups', groupId, 'auditLog', entryId));
+        row.remove();
+        const remaining = document.querySelectorAll('#audit-body tr[data-type]').length;
+        document.getElementById('audit-no-results').classList.toggle('hidden', remaining > 0);
+      } catch (e) {
+        alert('Could not remove entry. Try again.');
+      }
+    };
+
+    window.handleLogout = function() {
+      signOut(auth).then(() => { window.location.href = 'index.html'; });
+    };
+  </script>
 
   <script src="validation.js"></script>
   <script src="script.js"></script>
