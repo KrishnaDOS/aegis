@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aegis – Message Requests</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="audit-page">
+
+  <!-- Top navigation bar -->
+  <nav class="top-nav">
+    <a href="chat.html" class="top-nav-logo">AEGIS</a>
+    <div class="top-nav-right">
+      <span class="top-nav-encrypt">&#128274; Post-Quantum Encrypted</span>
+      <a href="#" class="btn btn-ghost btn-sm" onclick="handleLogout()">Log Out</a>
+    </div>
+  </nav>
+
+  <div class="audit-layout">
+
+    <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+      <a href="javascript:history.back()" class="btn btn-ghost btn-sm" title="Go back" style="font-size:18px; line-height:1;">&times;</a>
+    </div>
+
+    <!-- Page header -->
+    <div class="audit-page-header">
+      <div>
+        <h2 class="audit-title">Message Requests</h2>
+        <p class="audit-subtitle">People who want to start a direct message conversation with you</p>
+      </div>
+    </div>
+
+    <!-- Requests table -->
+    <div class="audit-table-wrap">
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Sent At</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="msg-req-body">
+          <tr><td colspan="4" style="text-align:center;padding:16px;color:var(--text-3);">Loading...</td></tr>
+        </tbody>
+      </table>
+      <p id="msg-req-empty" class="audit-no-results hidden">No pending message requests.</p>
+    </div>
+
+  </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+    import { getFirestore, collection, doc, getDoc, getDocs, deleteDoc, setDoc, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDcugecgT1ZS0iGxpamr9qG7PDnQ-SlFp4",
+      authDomain: "aegis-f5e17.firebaseapp.com",
+      projectId: "aegis-f5e17",
+      storageBucket: "aegis-f5e17.firebasestorage.app",
+      messagingSenderId: "878102859879",
+      appId: "1:878102859879:web:813def60200064c15904c2"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+    let currentUser = null;
+
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      currentUser = user;
+      await loadRequests();
+    });
+
+    async function loadRequests() {
+      const tbody = document.getElementById('msg-req-body');
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--text-3);">Loading...</td></tr>';
+
+      const snap = await getDocs(collection(db, 'messageRequests', currentUser.uid, 'incoming'));
+
+      if (snap.empty) {
+        tbody.innerHTML = '';
+        document.getElementById('msg-req-empty').classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('msg-req-empty').classList.add('hidden');
+      tbody.innerHTML = '';
+
+      snap.forEach(reqDoc => {
+        const r    = reqDoc.data();
+        const name = r.senderEmail ? r.senderEmail.split('@')[0] : reqDoc.id;
+        const ts   = r.sentAt ? r.sentAt.toDate().toLocaleString() : '—';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="log-user">${esc(name)}</td>
+          <td class="log-detail">${esc(r.senderEmail || reqDoc.id)}</td>
+          <td class="log-time">${esc(ts)}</td>
+          <td style="display:flex;gap:8px;padding:10px 12px;">
+            <button class="btn btn-primary btn-sm" onclick="acceptRequest('${reqDoc.id}','${esc(r.senderEmail || '')}',this)">&#10003; Accept</button>
+            <button class="btn btn-danger btn-sm" onclick="declineRequest('${reqDoc.id}',this)">&#10007; Decline</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.acceptRequest = async function(senderUID, senderEmail, btn) {
+      btn.disabled = true;
+      try {
+        const dmId  = [currentUser.uid, senderUID].sort().join('_');
+        const dmRef = doc(db, 'dms', dmId);
+        const dmSnap = await getDoc(dmRef);
+        if (!dmSnap.exists()) {
+          await setDoc(dmRef, {
+            participants:      [currentUser.uid, senderUID],
+            participantEmails: { [currentUser.uid]: currentUser.email, [senderUID]: senderEmail },
+            createdAt:         serverTimestamp()
+          });
+        }
+        await deleteDoc(doc(db, 'messageRequests', currentUser.uid, 'incoming', senderUID));
+        btn.closest('tr').remove();
+        if (document.querySelectorAll('#msg-req-body tr').length === 0) {
+          document.getElementById('msg-req-empty').classList.remove('hidden');
+        }
+      } catch (e) {
+        btn.disabled = false;
+        alert('Could not accept request. Try again.');
+      }
+    };
+
+    window.declineRequest = async function(senderUID, btn) {
+      btn.disabled = true;
+      try {
+        await deleteDoc(doc(db, 'messageRequests', currentUser.uid, 'incoming', senderUID));
+        btn.closest('tr').remove();
+        if (document.querySelectorAll('#msg-req-body tr').length === 0) {
+          document.getElementById('msg-req-empty').classList.remove('hidden');
+        }
+      } catch (e) {
+        btn.disabled = false;
+        alert('Could not decline request. Try again.');
+      }
+    };
+
+    window.handleLogout = function() {
+      signOut(auth).then(() => { window.location.href = 'index.html'; });
+    };
+  </script>
+
+  <script src="validation.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

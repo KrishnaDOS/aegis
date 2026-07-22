@@ -26,8 +26,8 @@
     <!-- Login Form -->
     <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
       <div class="form-group">
-        <label for="login-user">Username or Email</label>
-        <input type="text" id="login-user" placeholder="Enter username or email" required />
+        <label for="login-user">Email</label>
+        <input type="email" id="login-user" placeholder="Enter your email" required />
       </div>
       <div class="form-group">
         <label for="login-pass">Password</label>
@@ -44,10 +44,6 @@
 
     <!-- Register Form -->
     <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
-      <div class="form-group">
-        <label for="reg-username">Username</label>
-        <input type="text" id="reg-username" placeholder="Choose a username" required />
-      </div>
       <div class="form-group">
         <label for="reg-email">Email</label>
         <input type="email" id="reg-email" placeholder="Enter your email" required />
@@ -69,6 +65,94 @@
     </form>
 
   </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+             sendEmailVerification, signOut }
+      from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc }
+      from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDcugecgT1ZS0iGxpamr9qG7PDnQ-SlFp4",
+      authDomain: "aegis-f5e17.firebaseapp.com",
+      projectId: "aegis-f5e17",
+      storageBucket: "aegis-f5e17.firebasestorage.app",
+      messagingSenderId: "878102859879",
+      appId: "1:878102859879:web:813def60200064c15904c2",
+      measurementId: "G-FVSJB6WHX8"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    // Real login with Firebase Auth
+    window.handleLogin = function(event) {
+      event.preventDefault();
+      const email    = document.getElementById('login-user').value.trim();
+      const password = document.getElementById('login-pass').value;
+
+      if (!email || !password) {
+        showMessage('login-message', 'Please fill in all fields.', 'error');
+        return;
+      }
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          if (!userCredential.user.emailVerified) {
+            signOut(auth);
+            showMessage('login-message', 'Please verify your email before logging in. Check your inbox.', 'error');
+            return;
+          }
+          window.location.href = 'groups.html';
+        })
+        .catch(() => {
+          showMessage('login-message', 'Invalid email or password.', 'error');
+        });
+    };
+
+    // Real register with Firebase Auth
+    window.handleRegister = function(event) {
+      event.preventDefault();
+      const email    = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-pass').value;
+      const confirm  = document.getElementById('reg-confirm').value;
+
+      if (!email || !password || !confirm) {
+        showMessage('register-message', 'Please fill in all fields.', 'error');
+        return;
+      }
+      if (password.length < 8) {
+        showMessage('register-message', 'Password must be at least 8 characters.', 'error');
+        return;
+      }
+      if (password !== confirm) {
+        showMessage('register-message', 'Passwords do not match.', 'error');
+        return;
+      }
+
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          return Promise.all([
+            sendEmailVerification(user),
+            setDoc(doc(db, 'users', user.uid), { email, uid: user.uid })
+          ]).then(() => {
+            showMessage('register-message', 'Account created! Check your email (including spam folder) and click the verification link before logging in.', 'success');
+          });
+        })
+        .catch((error) => {
+          if (error.code === 'auth/email-already-in-use') {
+            showMessage('register-message', 'This email is already registered.', 'error');
+          } else {
+            showMessage('register-message', 'Could not create account. Try again.', 'error');
+          }
+        });
+    };
+  </script>
 
   <script src="validation.js"></script>
   <script src="script.js"></script>

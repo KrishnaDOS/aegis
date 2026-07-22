@@ -13,12 +13,14 @@
     <a href="chat.html" class="top-nav-logo">AEGIS</a>
     <div class="top-nav-right">
       <span class="top-nav-encrypt">&#128274; Post-Quantum Encrypted</span>
-      <a href="groups.html" class="btn btn-ghost btn-sm">My Groups</a>
-      <a href="index.html" class="btn btn-ghost btn-sm">Log Out</a>
+      <a href="#" class="btn btn-ghost btn-sm" onclick="handleLogout()">Log Out</a>
     </div>
   </nav>
 
   <div class="profile-layout">
+    <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+      <a href="javascript:history.back()" class="btn btn-ghost btn-sm" title="Go back" style="font-size:18px; line-height:1;">&times;</a>
+    </div>
 
     <!-- Profile card -->
     <div class="profile-card">
@@ -82,6 +84,74 @@
     </div>
 
   </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut,
+             EmailAuthProvider, reauthenticateWithCredential, updatePassword }
+      from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDcugecgT1ZS0iGxpamr9qG7PDnQ-SlFp4",
+      authDomain: "aegis-f5e17.firebaseapp.com",
+      projectId: "aegis-f5e17",
+      storageBucket: "aegis-f5e17.firebasestorage.app",
+      messagingSenderId: "878102859879",
+      appId: "1:878102859879:web:813def60200064c15904c2"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      currentUser = user;
+      document.getElementById('profile-email').value    = user.email;
+      document.getElementById('profile-username').value = user.email.split('@')[0];
+    });
+
+    window.changePassword = async function() {
+      const current = document.getElementById('current-pass').value;
+      const newPass = document.getElementById('new-pass').value;
+      const confirm = document.getElementById('confirm-pass').value;
+
+      if (!current || !newPass || !confirm) {
+        showMessage('password-message', 'Please fill in all fields.', 'error');
+        return;
+      }
+      if (newPass.length < 8) {
+        showMessage('password-message', 'New password must be at least 8 characters.', 'error');
+        return;
+      }
+      if (newPass !== confirm) {
+        showMessage('password-message', 'Passwords do not match.', 'error');
+        return;
+      }
+
+      try {
+        const credential = EmailAuthProvider.credential(currentUser.email, current);
+        await reauthenticateWithCredential(currentUser, credential);
+        await updatePassword(currentUser, newPass);
+
+        document.getElementById('current-pass').value = '';
+        document.getElementById('new-pass').value     = '';
+        document.getElementById('confirm-pass').value = '';
+        showMessage('password-message', 'Password updated successfully!', 'success');
+      } catch (error) {
+        if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+          showMessage('password-message', 'Current password is incorrect.', 'error');
+        } else {
+          showMessage('password-message', 'Could not update password. Try again.', 'error');
+        }
+      }
+    };
+
+    window.handleLogout = function() {
+      signOut(auth).then(() => { window.location.href = 'index.html'; });
+    };
+  </script>
 
   <script src="validation.js"></script>
   <script src="script.js"></script>

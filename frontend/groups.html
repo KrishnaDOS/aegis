@@ -14,7 +14,7 @@
     <div class="top-nav-right">
       <span class="top-nav-encrypt">&#128274; Post-Quantum Encrypted</span>
       <a href="profile.html" class="btn btn-ghost btn-sm">Profile</a>
-      <a href="index.html" class="btn btn-ghost btn-sm">Log Out</a>
+      <a href="#" class="btn btn-ghost btn-sm" onclick="handleLogout()">Log Out</a>
     </div>
   </nav>
 
@@ -32,27 +32,7 @@
     <!-- Group list -->
     <div class="group-list-section">
       <ul class="group-list" id="group-list">
-        <li class="group-list-item" onclick="selectGroup(this)" data-code="AEG-4350-X7K2" data-admin="true">
-          <div class="group-card-icon">43</div>
-          <div class="group-card-info">
-            <span class="group-card-name">CSC4350</span>
-            <span class="group-card-meta">3 members &middot; 4 channels</span>
-          </div>
-        </li>
-        <li class="group-list-item" onclick="selectGroup(this)" data-code="AEG-3120-M4P9" data-admin="false">
-          <div class="group-card-icon">31</div>
-          <div class="group-card-info">
-            <span class="group-card-name">CSC3120</span>
-            <span class="group-card-meta">5 members &middot; 2 channels</span>
-          </div>
-        </li>
-        <li class="group-list-item" onclick="selectGroup(this)" data-code="AEG-4610-R2W5" data-admin="false">
-          <div class="group-card-icon">46</div>
-          <div class="group-card-info">
-            <span class="group-card-name">CSC4610</span>
-            <span class="group-card-meta">2 members &middot; 1 channel</span>
-          </div>
-        </li>
+        <li class="group-list-item" id="groups-loading" style="padding:16px; color:var(--text-3);">Loading groups...</li>
       </ul>
       <a id="enter-btn" href="chat.html" class="btn btn-primary btn-full group-enter-btn hidden">Enter Group</a>
     </div>
@@ -84,6 +64,17 @@
         <button class="btn btn-primary" onclick="handleJoin()">Join</button>
       </div>
       <div id="join-message" class="form-message hidden"></div>
+    </div>
+
+    <!-- Request to Join -->
+    <div class="join-group-section">
+      <h3 class="join-group-title">Request to Join a Group</h3>
+      <p class="join-group-desc">Search by group name — the admin will approve or deny your request</p>
+      <div class="join-group-row">
+        <input type="text" id="request-group-name" class="join-input" placeholder="Enter exact group name" />
+        <button class="btn btn-primary" onclick="handleRequestJoin()">Request</button>
+      </div>
+      <div id="request-message" class="form-message hidden"></div>
     </div>
 
     <!-- Create Group modal -->
@@ -124,6 +115,224 @@
     </div>
 
   </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc, updateDoc, doc, getDoc, setDoc, arrayUnion, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDcugecgT1ZS0iGxpamr9qG7PDnQ-SlFp4",
+      authDomain: "aegis-f5e17.firebaseapp.com",
+      projectId: "aegis-f5e17",
+      storageBucket: "aegis-f5e17.firebasestorage.app",
+      messagingSenderId: "878102859879",
+      appId: "1:878102859879:web:813def60200064c15904c2"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      currentUser = user;
+      await loadGroups(user.uid);
+    });
+
+    async function loadGroups(uid) {
+      const list = document.getElementById('group-list');
+      list.innerHTML = '<li style="padding:16px; color:var(--text-3);">Loading groups...</li>';
+
+      const [ownerSnap, memberSnap] = await Promise.all([
+        getDocs(query(collection(db, 'groups'), where('ownerID', '==', uid))),
+        getDocs(query(collection(db, 'groups'), where('members', 'array-contains', uid)))
+      ]);
+
+      const groupMap = new Map();
+      ownerSnap.forEach(d => groupMap.set(d.id, d));
+      memberSnap.forEach(d => groupMap.set(d.id, d));
+
+      list.innerHTML = '';
+
+      if (groupMap.size === 0) {
+        list.innerHTML = '<li style="padding:16px; color:var(--text-3);">You have no groups yet. Create or join one below.</li>';
+        return;
+      }
+
+      groupMap.forEach(groupDoc => {
+        const g       = groupDoc.data();
+        const isAdmin = g.ownerID === uid;
+        const initials = g.name ? g.name.substring(0, 2).toUpperCase() : '??';
+
+        const li = document.createElement('li');
+        li.className     = 'group-list-item';
+        li.dataset.code  = g.invite_code || '';
+        li.dataset.admin = isAdmin ? 'true' : 'false';
+        li.dataset.id    = groupDoc.id;
+        li.setAttribute('onclick', 'selectGroup(this)');
+        li.innerHTML = `
+          <div class="group-card-icon">${initials}</div>
+          <div class="group-card-info">
+            <span class="group-card-name">${g.name}</span>
+            <span class="group-card-meta">${g.description || ''}</span>
+          </div>`;
+        list.appendChild(li);
+      });
+    }
+
+    window.handleCreate = async function() {
+      const name = document.getElementById('new-group-name').value.trim();
+      const desc = document.getElementById('new-group-desc').value.trim();
+
+      if (!name) {
+        showMessage('create-message', 'Please enter a group name.', 'error');
+        return;
+      }
+
+      const code = 'AEG-' + Math.random().toString(36).substring(2, 6).toUpperCase()
+                 + '-'    + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+      try {
+        const groupRef = await addDoc(collection(db, 'groups'), {
+          name,
+          description:    desc,
+          invite_code:    code,
+          invite_enabled: true,
+          ownerID:        currentUser.uid,
+          roles:          { [currentUser.uid]: 'admin' },
+          created_at:     serverTimestamp()
+        });
+
+        // Auto-create a #general channel for every new group
+        await addDoc(collection(db, 'groups', groupRef.id, 'channels'), {
+          name:      'general',
+          groupID:   groupRef.id,
+          isHidden:  false,
+          role:      'member',
+          createdAt: serverTimestamp()
+        });
+
+        await addDoc(collection(db, 'groups', groupRef.id, 'auditLog'), {
+          type:      'group',
+          action:    `Created group "${name}"`,
+          userEmail: currentUser.email,
+          userUID:   currentUser.uid,
+          timestamp: serverTimestamp()
+        });
+
+        document.getElementById('new-group-name').value = '';
+        document.getElementById('new-group-desc').value = '';
+        hidePanel('create');
+
+        document.getElementById('modal-group-name').textContent = name;
+        document.getElementById('modal-code-value').textContent = code;
+        hideMessage('modal-copy-message');
+        document.getElementById('invite-modal-overlay').classList.remove('hidden');
+
+        await loadGroups(currentUser.uid);
+
+      } catch (e) {
+        showMessage('create-message', 'Could not create group. Try again.', 'error');
+      }
+    };
+
+    window.handleJoin = async function() {
+      const code = document.getElementById('invite-code').value.trim();
+      if (!code) {
+        showMessage('join-message', 'Please enter an invite code.', 'error');
+        return;
+      }
+
+      try {
+        const q = query(
+          collection(db, 'groups'),
+          where('invite_code', '==', code),
+          where('invite_enabled', '==', true)
+        );
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+          showMessage('join-message', 'Invalid or expired invite code.', 'error');
+          return;
+        }
+
+        const groupDoc = snap.docs[0];
+        const g = groupDoc.data();
+
+        if (g.ownerID === currentUser.uid || (g.members && g.members.includes(currentUser.uid))) {
+          showMessage('join-message', 'You are already in this group.', 'error');
+          return;
+        }
+
+        await updateDoc(groupDoc.ref, {
+          members:                    arrayUnion(currentUser.uid),
+          [`roles.${currentUser.uid}`]: 'member'
+        });
+
+        await addDoc(collection(db, 'groups', groupDoc.id, 'auditLog'), {
+          type:      'member',
+          action:    `Joined group "${g.name}"`,
+          userEmail: currentUser.email,
+          userUID:   currentUser.uid,
+          timestamp: serverTimestamp()
+        });
+
+        document.getElementById('invite-code').value = '';
+        showMessage('join-message', `Joined "${g.name}" successfully!`, 'success');
+        await loadGroups(currentUser.uid);
+
+      } catch (e) {
+        showMessage('join-message', 'Could not join group. Try again.', 'error');
+      }
+    };
+
+    window.handleRequestJoin = async function() {
+      const name = document.getElementById('request-group-name').value.trim();
+      if (!name) { showMessage('request-message', 'Please enter a group name.', 'error'); return; }
+
+      try {
+        const q    = query(collection(db, 'groups'), where('name', '==', name));
+        const snap = await getDocs(q);
+
+        if (snap.empty) { showMessage('request-message', 'Group not found.', 'error'); return; }
+
+        const groupDoc = snap.docs[0];
+        const g        = groupDoc.data();
+
+        if (g.ownerID === currentUser.uid || (g.roles && g.roles[currentUser.uid])) {
+          showMessage('request-message', 'You are already in this group.', 'error');
+          return;
+        }
+
+        const reqRef  = doc(db, 'groups', groupDoc.id, 'joinRequests', currentUser.uid);
+        const reqSnap = await getDoc(reqRef);
+        if (reqSnap.exists()) {
+          showMessage('request-message', 'You already sent a request to this group.', 'error');
+          return;
+        }
+
+        await setDoc(reqRef, {
+          userEmail:   currentUser.email,
+          userUID:     currentUser.uid,
+          requestedAt: serverTimestamp()
+        });
+
+        document.getElementById('request-group-name').value = '';
+        showMessage('request-message', `Request sent to "${g.name}"!`, 'success');
+      } catch (e) {
+        showMessage('request-message', 'Could not send request. Try again.', 'error');
+      }
+    };
+
+    window.handleLogout = function() {
+      signOut(auth).then(() => { window.location.href = 'index.html'; });
+    };
+  </script>
 
   <script src="validation.js"></script>
   <script src="script.js"></script>
