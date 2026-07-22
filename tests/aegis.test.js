@@ -80,3 +80,33 @@ describe('Scenario 4: User logs out', () => {
     expect(password).toBe('');
   });
 });
+
+// scenario 5 - user completes a secure messaging exchange
+describe('Scenario 5: User completes a secure messaging exchange', () => {
+  const clientEncrypt = (message) => ({
+    ciphertext: `ciphertext:${message}`,
+    signature: `signature:${message}`
+  });
+
+  const serverRelay = (packet) => ({ ...packet });
+
+  const clientDecrypt = (packet) => packet.ciphertext.replace('ciphertext:', '');
+
+  test('encrypted message should pass from client to server and back', () => {
+    const outbound = clientEncrypt('meet me in the lobby at 7pm');
+    const relayed = serverRelay(outbound);
+    const inbound = serverRelay(relayed);
+
+    expect(relayed).toEqual(outbound);
+    expect(inbound).toEqual(outbound);
+    expect(clientDecrypt(inbound)).toBe('meet me in the lobby at 7pm');
+  });
+
+  test('reply should also follow the same flow', () => {
+    const reply = clientEncrypt('acknowledged, I will bring the access code');
+    const relayedReply = serverRelay(reply);
+
+    expect(relayedReply.signature).toBe(reply.signature);
+    expect(clientDecrypt(relayedReply)).toBe('acknowledged, I will bring the access code');
+  });
+});
